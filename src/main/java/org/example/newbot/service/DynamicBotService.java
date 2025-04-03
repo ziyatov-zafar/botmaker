@@ -7,9 +7,11 @@ import org.example.newbot.bot.online_magazine_bot.OnlineMagazineBot;
 import org.example.newbot.bot.online_magazine_bot.admin.AdminOnlineMagazineKyb;
 import org.example.newbot.bot.online_magazine_bot.user.UserOnlineMagazineFunction;
 import org.example.newbot.bot.online_magazine_bot.user.UserOnlineMagazineKyb;
+import org.example.newbot.bot.online_magazine_bot.user.UserOnlineMagazineMsg;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.BotInfo;
 import org.example.newbot.repository.BotInfoRepository;
+import org.example.newbot.repository.LocationRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -47,6 +49,7 @@ public class DynamicBotService {
     private final CategoryService categoryService;
     private final ProductService productService;
     private final ProductVariantService productVariantService;
+    private final LocationRepository locationRepository;
 
     @Value("${size}")
     public int size;
@@ -54,13 +57,13 @@ public class DynamicBotService {
     public Long adminChatId;
 
 
-    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService) {
+    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService, LocationRepository locationRepository) {
         this.botInfoRepository = botInfoRepository;
         this.botUserService = botUserService;
         this.categoryService = categoryService;
         this.productService = productService;
         this.productVariantService = productVariantService;
-
+        this.locationRepository = locationRepository;
     }
 
 
@@ -207,7 +210,8 @@ public class DynamicBotService {
                     productService, productVariantService
             ), new UserOnlineMagazineFunction(
                     botUserService, this, new UserOnlineMagazineKyb(),
-                    categoryService, productService, productVariantService
+                    categoryService, productService, productVariantService,
+                    new UserOnlineMagazineMsg(),locationRepository
             ));
             onlineMagazineBot.onlineMagazineBotMenu(botInfo, chatId, update, adminChatId);
         } else if (botInfo.getType().equals("logistic-bot")) {

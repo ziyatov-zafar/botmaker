@@ -36,4 +36,6 @@ public class BotUser {
     private Long categoryId;
     private Long productId;
     private Long productVariantId;
+
+    private String deliveryType;
 }

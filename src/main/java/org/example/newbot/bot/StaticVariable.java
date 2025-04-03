@@ -19,7 +19,7 @@ public class StaticVariable {
             "\uD83D\uDCE8 \uD835\uDDEC\uD835\uDDE2\uD835\uDDE5\uD835\uDDD7\uD835\uDDD4\uD835\uDDE0"
     };
     public static String backButton = "\uD83D\uDD19 Orqaga qaytish";
-    public static String backButtonRu = "\uD83D\uDD19 Вернись";
+    public static String backButtonRu = "\uD83D\uDD19 Назад";
     public static String mainMenu = "\uD83C\uDFE0 Asosiy menyu";
     public static String mainMenuRu = "\uD83C\uDFE0 Главное меню";
     public static final String addCategory = "➕ Kategoriya qo'shish";

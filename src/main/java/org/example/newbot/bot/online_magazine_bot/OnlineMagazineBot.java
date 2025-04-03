@@ -3,6 +3,7 @@ package org.example.newbot.bot.online_magazine_bot;
 import lombok.extern.log4j.Log4j2;
 import org.example.newbot.bot.online_magazine_bot.admin.AdminOnlineMagazineFunction;
 import org.example.newbot.bot.online_magazine_bot.user.UserOnlineMagazineFunction;
+import org.example.newbot.dto.Json;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.BotInfo;
 import org.example.newbot.model.BotUser;
@@ -10,6 +11,7 @@ import org.example.newbot.repository.BotInfoRepository;
 import org.example.newbot.service.BotUserService;
 import org.example.newbot.service.DynamicBotService;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.example.newbot.bot.StaticVariable.mainMenu;
+import static org.example.newbot.bot.StaticVariable.mainMenuRu;
 
 @Log4j2
 public class OnlineMagazineBot {
@@ -141,7 +144,7 @@ public class OnlineMagazineBot {
                 String data = callbackQuery.getData();
                 Integer messageId = callbackQuery.getMessage().getMessageId();
                 if (data.startsWith("reply")) {
-                    userFunction.reply(botInfo, user.getChatId(), user, Long.valueOf(data.split("_")[1]), messageId,true);
+                    userFunction.reply(botInfo, user.getChatId(), user, Long.valueOf(data.split("_")[1]), messageId, true);
                     return;
                 }
                 switch (eventCode) {
@@ -167,22 +170,33 @@ public class OnlineMagazineBot {
                 Message message = update.getMessage();
                 if (message.hasText()) {
                     String text = message.getText();
-                    if (text.equals("/start")) {
-
+                    if (text.equals("/start") || text.equals(mainMenu) || text.equals(mainMenuRu)) {
+                        userFunction.start(botInfo, user, false);
                     } else {
                         switch (eventCode) {
                             case "reply message" -> userFunction.replyMessage(botInfo, user, text);
+                            case "request_lang" -> userFunction.requestLang(botInfo, user, text);
+                            case "request_contact" -> userFunction.requestContact(botInfo, user, text);
+                            case "menu" -> userFunction.menu(botInfo, user, text);
+                            case "commentToAdmin" -> userFunction.commentToAdmin(botInfo, user, text);
+                            case "deliveryType" -> userFunction.deliveryType(botInfo, user, text);
                         }
                     }
+                } else if (message.hasContact()) {
+                    if (eventCode.equals("request_contact")) {
+                        userFunction.requestContact(botInfo, user, message.getContact());
+                    }
+                } else if (message.hasLocation()) {
+                    Location location = message.getLocation();
+
                 }
             } else if (update.hasCallbackQuery()) {
                 CallbackQuery callbackQuery = update.getCallbackQuery();
                 String data = callbackQuery.getData();
                 Integer messageId = callbackQuery.getMessage().getMessageId();
                 if (data.startsWith("reply")) {
-                    userFunction.reply(botInfo, user.getChatId(), user, Long.valueOf(data.split("_")[1]), messageId,false);
+                    userFunction.reply(botInfo, user.getChatId(), user, Long.valueOf(data.split("_")[1]), messageId, false);
                 } else {
-
                 }
             }
         }
