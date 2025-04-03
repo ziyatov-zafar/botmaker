@@ -1,0 +1,24 @@
+
+
+spring:
+  application:
+    name: example-bot
+  datasource:
+    url: jdbc:postgresql://localhost:5432/logistic_bot_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+server:
+  port: 8042
+
+bot:
+  username: https://t.me/bot_maker_1_robot
+  token: 7928701208:AAFR3seQux9zWJimMmfIWx9EQV_2D7CnLe8
+admin:
+  chat:
+    id: 78823168261
+size: 10
