@@ -2,16 +2,22 @@ package org.example.newbot.bot;
 
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
+import org.example.newbot.bot.roleadmin.AdminFunction;
+import org.example.newbot.bot.roleadmin.AdminKyb;
+import org.example.newbot.bot.roleadmin.RoleAdmin;
 import org.example.newbot.bot.roleuser.RoleUser;
 import org.example.newbot.bot.roleuser.UserFunction;
 import org.example.newbot.bot.roleuser.UserKyb;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.User;
+import org.example.newbot.repository.BotInfoRepository;
 import org.example.newbot.service.BotPriceService;
+import org.example.newbot.service.DynamicBotService;
 import org.example.newbot.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -39,7 +45,11 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private final UserService userService;
     private final UserKyb userKyb;
+    private final AdminKyb adminKyb;
     private final BotPriceService botPriceService;
+    private final DynamicBotService dynamicBotService;
+    private final TelegramBotsApi telegramBotsApi;
+    private final BotInfoRepository botInfoRepository;
     @Value("${bot.token}")
     public String botToken;
     @Value("${bot.username}")
@@ -70,7 +80,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         nickname = firstname + " " + (lastname != null ? lastname : "");
         ResponseDto<User> checkUser = userService.checkUser(chatId);
         User user;
-        if (checkUser != null) {
+        if (checkUser.isSuccess()) {
             user = checkUser.getData();
         } else {
             user = new User();
@@ -84,12 +94,15 @@ public class TelegramBot extends TelegramLongPollingBot {
         user.setUsername(username);
         userService.save(user);
         if (chatId.equals(superAdminChatId)) {
-
+            new RoleAdmin(new AdminFunction(
+                    this, userService, adminKyb,
+                    botPriceService, dynamicBotService,
+                    telegramBotsApi, botInfoRepository
+            )).menu(user, update);
         } else {
+            user.setRole("user");
             String role = user.getRole();
-            if (role.equals("admin")) {
-
-            } else if (role.equals("user")) {
+            if (role.equals("user")) {
                 new RoleUser(new UserFunction(
                         this, userService, userKyb,
                         botPriceService

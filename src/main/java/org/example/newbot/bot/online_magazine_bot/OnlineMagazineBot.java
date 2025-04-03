@@ -96,13 +96,6 @@ public class OnlineMagazineBot {
                         switch (eventCode) {
                             case "menu" -> adminFunction.menu(botInfo.getId(), user, text, botInfo, adminChatId);
                             case "users page" -> adminFunction.usersPage(botInfo.getId(), botInfo, user, text);
-<<<<<<< HEAD
-                            case "get all users","get all block users" -> adminFunction.handleBackToUsersPage(botInfo.getId(), botInfo, user, text , eventCode);
-                            case "searching users" -> adminFunction.searchingUsers(botInfo,user,text);
-                            case "find by id" -> adminFunction.findById(botInfo,botInfo.getId(),user , text);
-                        }
-                    }
-=======
                             case "get all users", "get all block users" ->
                                     adminFunction.handleBackToUsersPage(botInfo.getId(), botInfo, user, text, eventCode);
                             case "searching users" -> adminFunction.searchingUsers(botInfo, user, text);
@@ -142,7 +135,6 @@ public class OnlineMagazineBot {
                     } else if (eventCode.equals("add product variant to product get img")) {
                         adminFunction.addProductVariant(botInfo, user, fileId);
                     }
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
                 }
             } else {
                 CallbackQuery callbackQuery = update.getCallbackQuery();
@@ -159,9 +151,6 @@ public class OnlineMagazineBot {
                             adminFunction.getAllBlockUsers(botInfo.getId(), botInfo, user, data, callbackQuery, messageId);
                     case "searching users" ->
                             adminFunction.searchingUsers(botInfo.getId(), botInfo, user, data, callbackQuery, messageId);
-<<<<<<< HEAD
-                    case "find by id" -> adminFunction.findById(botInfo,botInfo.getId(),user , data,callbackQuery,messageId);
-=======
                     case "find by id" ->
                             adminFunction.findById(botInfo, botInfo.getId(), user, data, callbackQuery, messageId);
                     case "crud category" -> adminFunction.crudCategory(botInfo, user, data, messageId, callbackQuery);
@@ -171,7 +160,6 @@ public class OnlineMagazineBot {
                     case "crud product" ->
                             adminFunction.crudProduct(botInfo, user, data, callbackQuery, messageId, false);
 
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
                 }
             }
         } else {
@@ -199,4 +187,6 @@ public class OnlineMagazineBot {
             }
         }
     }
+
+
 }

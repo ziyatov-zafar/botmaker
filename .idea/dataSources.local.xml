@@ -7,5 +7,11 @@
       <user-name>postgres</user-name>
       <schema-mapping />
     </data-source>
+    <data-source name="localhostdb@localhost" uuid="37bcbe2d-7565-4d93-b68e-a6a4e4186ca6">
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="POSTGRES" />
+      <secret-storage>master_key</secret-storage>
+      <user-name>postgres</user-name>
+      <schema-mapping />
+    </data-source>
   </component>
 </project>

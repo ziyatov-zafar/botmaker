@@ -4,7 +4,7 @@ spring:
   application:
     name: example-bot
   datasource:
-    url: jdbc:postgresql://localhost:5432/logistic_bot_db
+    url: jdbc:postgresql://localhost:5432/localhostdb
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver

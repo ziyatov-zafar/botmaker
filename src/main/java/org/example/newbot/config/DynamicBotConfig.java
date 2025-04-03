@@ -33,9 +33,9 @@ public class DynamicBotConfig {
             for (BotInfo botInfo : activeBots) {
                 try {
                     botService.createAndRegisterBot(botsApi, botInfo);
-                    System.out.println("Bot download: " + botInfo.getBotUsername());
+                    System.out.println("Bot yuklandi: " + botInfo.getBotUsername());
                 } catch (Exception e) {
-                    System.err.println("Bot do not download: " + botInfo.getBotUsername());
+                    System.err.println("Bot yuklanmadi: " + botInfo.getBotUsername());
                     log.error(e);
                 }
             }

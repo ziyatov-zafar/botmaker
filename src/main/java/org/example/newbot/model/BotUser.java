@@ -33,4 +33,7 @@ public class BotUser {
     @ManyToMany(mappedBy = "users",fetch = FetchType.EAGER)
     private List<BotInfo> bots;
     private Long botUserId;
+    private Long categoryId;
+    private Long productId;
+    private Long productVariantId;
 }

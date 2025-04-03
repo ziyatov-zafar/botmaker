@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -25,13 +26,16 @@ public class BotInfo {
     @ElementCollection(fetch = FetchType.EAGER)
 //    @CollectionTable(name = "bot_user_mapping", joinColumns = @JoinColumn(name = "bot_id"))
     private List<Long> adminChatIds = new ArrayList<>();
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "bot_user",
             joinColumns = @JoinColumn(name = "bot_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<BotUser> users;
+    private Boolean isFree;
+    private Date createdAt ;
+    private Date updatedAt ;
     public BotInfo() {
 
     }

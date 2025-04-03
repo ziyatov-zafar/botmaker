@@ -2,11 +2,11 @@
 
 spring:
   application:
-    name: maker-bot
+    name: example-bot
   datasource:
-    url: jdbc:postgresql://localhost:5432/logistic_bot_db
+    url: jdbc:postgresql://localhost:5432/localhostdb
     username: postgres
-    password: postgres
+    password: zafar123
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -20,5 +20,5 @@ bot:
   token: 7928701208:AAFR3seQux9zWJimMmfIWx9EQV_2D7CnLe8
 admin:
   chat:
-    id: 78823168261
+    id: 7882316826
 size: 10

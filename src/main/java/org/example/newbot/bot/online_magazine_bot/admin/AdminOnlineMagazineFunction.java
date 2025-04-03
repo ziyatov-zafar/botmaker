@@ -3,17 +3,16 @@ package org.example.newbot.bot.online_magazine_bot.admin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.example.newbot.dto.ResponseDto;
-import org.example.newbot.model.BotInfo;
-import org.example.newbot.model.BotUser;
+import org.example.newbot.model.*;
 import org.example.newbot.repository.BotInfoRepository;
-import org.example.newbot.service.BotUserService;
-import org.example.newbot.service.DynamicBotService;
+import org.example.newbot.service.*;
 import org.springframework.data.domain.Page;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.example.newbot.bot.StaticVariable.*;
 
@@ -25,6 +24,9 @@ public class AdminOnlineMagazineFunction {
     private final BotUserService botUserService;
     private final DynamicBotService bot;
     private final AdminOnlineMagazineKyb kyb;
+    private final CategoryService categoryService;
+    private final ProductService productService;
+    private final ProductVariantService productVariantService;
 
     public void start(BotInfo botInfo, BotUser user) {
         bot.sendMessage(botInfo.getId(), user.getChatId(), "\uD83D\uDCCC *Asosiy menyuga xush kelibsiz!", kyb.menu);
@@ -42,9 +44,6 @@ public class AdminOnlineMagazineFunction {
         if (text.equals(adminOnlineMagazineMenu[0])) {
             bot.sendMessage(botId, user.getChatId(), text, kyb.usersPage());
             eventCode(user, "users page");
-<<<<<<< HEAD
-        }//hali qilinadi
-=======
         } else if (text.equals(adminOnlineMagazineMenu[1])) {
 
         } else if (text.equals(adminOnlineMagazineMenu[2])) {
@@ -74,7 +73,6 @@ public class AdminOnlineMagazineFunction {
         } else if (text.equals(backButton)) {
             start(botInfo, user);
         } else wrongBtn(botId, user.getChatId(), kyb.menu);
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
     }
 
     public void usersPage(Long botId, BotInfo botInfo, BotUser user, String text) {
@@ -160,6 +158,14 @@ public class AdminOnlineMagazineFunction {
                 
                 Iltimos, birozdan keyin qayta urinib ko'ring.
                 Agar muammo takrorlansa, @me_mrx ga murojaat qiling.""", kyb.usersPage());
+    }
+
+    private void errorResponseUserPage(BotUser user, Long botId, ReplyKeyboardMarkup markup) {
+        bot.sendMessage(botId, user.getChatId(), """
+                ⚠️ *Kutilmagan xatolik yuz berdi* ⚠️
+                
+                Iltimos, birozdan keyin qayta urinib ko'ring.
+                Agar muammo takrorlansa, @me_mrx ga murojaat qiling.""", markup);
     }
 
 
@@ -484,8 +490,6 @@ public class AdminOnlineMagazineFunction {
     public void findById(BotInfo botInfo, Long id, BotUser user, String data, CallbackQuery callbackQuery, Integer messageId) {
         blockOrUnblock(botInfo.getId(), user, data, callbackQuery, messageId);
     }
-<<<<<<< HEAD
-=======
 
 
     public void categoryMenu(BotInfo botInfo, BotUser user, String text) {
@@ -1246,5 +1250,4 @@ public class AdminOnlineMagazineFunction {
         bot.sendMessage(botInfo.getId(), user.getChatId(), "Xabaringiz muvaffaqiyatli yetkazildi", kyb.backBtn("uz"));
         start(botInfo, user);
     }
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
 }

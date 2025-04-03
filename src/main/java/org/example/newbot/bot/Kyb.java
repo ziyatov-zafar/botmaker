@@ -1,5 +1,6 @@
 package org.example.newbot.bot;
 
+import org.example.newbot.model.Product;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -9,8 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.example.newbot.bot.StaticVariable.backButton;
-import static org.example.newbot.bot.StaticVariable.mainMenu;
+import static org.example.newbot.bot.StaticVariable.*;
 
 
 public class Kyb {
@@ -68,22 +68,10 @@ public class Kyb {
     }
 
 
-
-
-
     public ReplyKeyboardMarkup isSuccess(String lang) {
         if (lang.equals("uz")) {
-<<<<<<< HEAD
-            return setKeyboards(new String[]{
-                    "✅ Ha", "❌ Yo'q"
-            }, 2);
-        } else return setKeyboards(new String[]{
-                "«❌ Да»", "«❌ Нет»"
-        }, 2);
-=======
             return setKeyboards(new String[]{"✅ Ha", "❌ Yo'q"}, 2);
         } else return setKeyboards(new String[]{"«✅ Да»", "«❌ Нет»"}, 2);
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
     }
 
     public InlineKeyboardMarkup isSuccessBtn(String lang) {
@@ -107,9 +95,6 @@ public class Kyb {
         return new InlineKeyboardMarkup(rows);
 
     }
-<<<<<<< HEAD
-    public ReplyKeyboardMarkup backBtn = setKeyboards(new String[]{backButton,mainMenu},2);
-=======
 
     public ReplyKeyboardMarkup backBtn = setKeyboards(new String[]{backButton, mainMenu}, 2);
 
@@ -144,5 +129,4 @@ public class Kyb {
         return new InlineKeyboardMarkup(rows);
     }
 
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
 }

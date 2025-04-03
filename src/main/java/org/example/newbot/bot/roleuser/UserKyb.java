@@ -1,6 +1,7 @@
 package org.example.newbot.bot.roleuser;
 
 import org.example.newbot.bot.Kyb;
+import org.example.newbot.bot.online_magazine_bot.admin.AdminOnlineMagazineKyb;
 import org.example.newbot.model.BotPrice;
 import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -51,11 +52,9 @@ public class UserKyb extends Kyb {
         }
         rows.add(row);
         row = new KeyboardRow();
-        button = new KeyboardButton(backButton);
-        row.add(button);
-        button = new KeyboardButton(mainMenu);
-        row.add(button);
-        rows.add(row);
-        return ReplyKeyboardMarkup.builder().selective(true).resizeKeyboard(true).keyboard(rows).build();
+        return setbackAndMenuBtn(rows, row);
+    }
+    public  ReplyKeyboardMarkup setbackAndMenuBtn(List<KeyboardRow> rows, KeyboardRow row) {
+        return AdminOnlineMagazineKyb.setbackAndMenuBtn(rows, row);
     }
 }

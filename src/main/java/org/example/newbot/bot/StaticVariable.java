@@ -1,13 +1,13 @@
 package org.example.newbot.bot;
 
 import org.apache.commons.lang3.StringUtils;
-import org.example.newbot.model.BotPrice;
-import org.example.newbot.model.BotUser;
+import org.example.newbot.model.*;
 import org.springframework.data.domain.Page;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 public class StaticVariable {
@@ -21,19 +21,16 @@ public class StaticVariable {
     public static String backButton = "\uD83D\uDD19 Orqaga qaytish";
     public static String backButtonRu = "\uD83D\uDD19 Вернись";
     public static String mainMenu = "\uD83C\uDFE0 Asosiy menyu";
-<<<<<<< HEAD
-=======
     public static String mainMenuRu = "\uD83C\uDFE0 Главное меню";
     public static final String addCategory = "➕ Kategoriya qo'shish";
     public static final String addProduct = "🛒 Mahsulot qo'shish";
     public static final String adminTelegramProfile = "@Me_MRX";
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
 
 
     public static String aboutBotPrice(BotPrice botPrice, Boolean isAdmin) {
         String formattedPrice = NumberFormat.getInstance().format(botPrice.getPrice());
         StringBuilder response = new StringBuilder();
-        if (isAdmin) {
+        if (!isAdmin) {
             response.append("<b>🌟 Bot Narxi:</b> ").append(formattedPrice).append(" So'm\n")
                     .append("<b>💡 Tur:</b> ").append(botPrice.getTypeText()).append("\n")
                     .append("<b>📝 Vazifasi:</b> ").append(botPrice.getDescription()).append("\n\n");
@@ -124,8 +121,8 @@ public class StaticVariable {
     public static String adminOnlineMagazineAboutUser(BotUser user) {
         return """
                    👤 *Foydalanuvchi ma'lumotlari*:
-                   
-                   
+                
+                
                    👤 %s
                    🆔 ID: `<code>%d</code>`
                    💬 Chat ID: `<code>%d</code>`
@@ -164,8 +161,6 @@ public class StaticVariable {
         }
         return status;
     }
-<<<<<<< HEAD
-=======
 
     public static String[] botMakerAdminMenu = new String[]{
             "👥 Foydalanuvchilar", "🤖 Botlar",
@@ -267,5 +262,4 @@ public class StaticVariable {
                 🛠️ Adminlar: %d ta
                 """.formatted(botUsername, userSize, blocks, users, admins);
     }
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
 }

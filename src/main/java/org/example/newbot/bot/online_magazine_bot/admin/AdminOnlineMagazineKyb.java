@@ -2,6 +2,9 @@ package org.example.newbot.bot.online_magazine_bot.admin;
 
 import org.example.newbot.bot.Kyb;
 import org.example.newbot.model.BotUser;
+import org.example.newbot.model.Category;
+import org.example.newbot.model.ProductVariant;
+import org.example.newbot.model.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -79,8 +82,6 @@ public class AdminOnlineMagazineKyb extends Kyb {
         }
         return new InlineKeyboardMarkup(rows);
     }
-<<<<<<< HEAD
-=======
 
     public ReplyKeyboardMarkup setCategories(List<Category> categories, boolean empty) {
         List<KeyboardRow> rows = new ArrayList<>();
@@ -259,5 +260,4 @@ public class AdminOnlineMagazineKyb extends Kyb {
         rows.add(row);
         return new InlineKeyboardMarkup(rows);
     }
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
 }

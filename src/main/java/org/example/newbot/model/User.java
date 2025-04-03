@@ -31,9 +31,11 @@ public class User {
     private String findNickname;
     private Integer messageId;
     private String helperRole;
+    private String helperBotType;
 /*
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Load> loads;
 */
     private Long loadId;
+
 }

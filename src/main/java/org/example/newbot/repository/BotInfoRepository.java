@@ -8,4 +8,5 @@ import java.util.List;
 public interface BotInfoRepository extends JpaRepository<BotInfo, Long> {
     List<BotInfo> findAllByActiveIsTrueOrderByIdDesc();
     BotInfo findByType(String type);
+    BotInfo findByBotTokenAndActiveIsTrue(String token);
 }

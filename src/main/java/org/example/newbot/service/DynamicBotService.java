@@ -18,11 +18,16 @@ import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.GetMe;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMedia;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
@@ -39,28 +44,22 @@ public class DynamicBotService {
     private final List<BotInstance> activeBots = new ArrayList<>();
     private final BotInfoRepository botInfoRepository;
     private final BotUserService botUserService;
-<<<<<<< HEAD
-=======
     private final CategoryService categoryService;
     private final ProductService productService;
     private final ProductVariantService productVariantService;
 
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
     @Value("${size}")
     public int size;
     @Value("${admin.chat.id}")
     public Long adminChatId;
 
 
-    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService) {
+    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService) {
         this.botInfoRepository = botInfoRepository;
         this.botUserService = botUserService;
-<<<<<<< HEAD
-=======
         this.categoryService = categoryService;
         this.productService = productService;
         this.productVariantService = productVariantService;
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
 
     }
 
@@ -95,7 +94,7 @@ public class DynamicBotService {
         }
     }
 
-    public void createAndRegisterBot(TelegramBotsApi botsApi, BotInfo botInfo) {
+    public String createAndRegisterBot(TelegramBotsApi botsApi, BotInfo botInfo) {
         try {
             TelegramLongPollingBot bot = new TelegramLongPollingBot(botInfo.getBotToken()) {
                 @Override
@@ -127,8 +126,10 @@ public class DynamicBotService {
             BotSession session = botsApi.registerBot(bot);
             activeBots.add(new BotInstance(botInfo.getId(), bot, session, username));
             log.info("Bot qo'shildi: {} (@{})", botInfo.getId(), username);
+            return username;
         } catch (Exception e) {
             log.error("Bot yaratishda xato: {}", e.getMessage(), e);
+            return null;
         }
     }
 
@@ -197,20 +198,16 @@ public class DynamicBotService {
         if (bOp.isEmpty())
             return;
         BotInfo botInfo = bOp.get();
-        if (botInfo.getType().equals("online-magazine-bot")) {
+        if (botInfo.getType().equals("online-magazine")) {
             OnlineMagazineBot onlineMagazineBot = new OnlineMagazineBot(
                     this, botInfoRepository,
                     botUserService, new AdminOnlineMagazineFunction(
                     botInfoRepository, botUserService, this,
-<<<<<<< HEAD
-                    new AdminOnlineMagazineKyb()
-=======
                     new AdminOnlineMagazineKyb(), categoryService,
                     productService, productVariantService
             ), new UserOnlineMagazineFunction(
                     botUserService, this, new UserOnlineMagazineKyb(),
                     categoryService, productService, productVariantService
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
             ));
             onlineMagazineBot.onlineMagazineBotMenu(botInfo, chatId, update, adminChatId);
         } else if (botInfo.getType().equals("logistic-bot")) {
@@ -288,7 +285,7 @@ public class DynamicBotService {
             return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s}".formatted(botId));
         }
         try {
-            DeleteMessage message = new DeleteMessage(""+chatId,messageId);
+            DeleteMessage message = new DeleteMessage("" + chatId, messageId);
             botInstance.get().getBot().execute(message);
             return new ResponseDto<>(true, "Ok");
         } catch (TelegramApiException e) {
@@ -311,6 +308,28 @@ public class DynamicBotService {
             message.setMessageId(messageId);
             message.setReplyMarkup(markup);
             message.enableHtml(true);
+            botInstance.get().getBot().execute(message);
+            return new ResponseDto<>(true, "Ok");
+        } catch (TelegramApiException e) {
+            log.error("Xabar yuborishda xato. Bot ID: {}, Chat ID: {}. Xato: {}",
+                    botId, chatId, e.getMessage(), e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+    }
+
+    public ResponseDto<Void> editCaption(Long botId, Long chatId, Integer messageId, String text, InlineKeyboardMarkup markup) {
+        Optional<BotInstance> botInstance = findBotById(botId);
+        if (botInstance.isEmpty()) {
+            log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
+            return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s}".formatted(botId));
+        }
+        try {
+            EditMessageCaption message = new EditMessageCaption();
+            message.setChatId(chatId.toString());
+            message.setCaption(text);
+            message.setMessageId(messageId);
+            message.setReplyMarkup(markup);
+            message.setParseMode("html");
             botInstance.get().getBot().execute(message);
             return new ResponseDto<>(true, "Ok");
         } catch (TelegramApiException e) {
@@ -392,8 +411,6 @@ public class DynamicBotService {
         }
     }
 
-<<<<<<< HEAD
-=======
     public ResponseDto<Void> sendPhoto(Long botId, Long chatId, String fileId,
                                        InlineKeyboardMarkup markup, boolean protectContent, String caption
     ) {
@@ -467,7 +484,6 @@ public class DynamicBotService {
     }
 
 
->>>>>>> bf7b7aa (Zafar tominidan qo'shildi)
     public void stopBot(Long botId) {
         Optional<BotInstance> botInstance = findBotById(botId);
         botInstance.ifPresent(instance -> {
