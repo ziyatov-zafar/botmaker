@@ -17,4 +17,5 @@ public class Cart {
     private Long userId;
     private Long botId;
     private String status;
+    private String type;
 }

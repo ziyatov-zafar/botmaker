@@ -37,6 +37,9 @@ public class ConstVariable {
         }
     }
 
+    public static String cardBtn(String lang) {
+        return lang.equals("uz") ? "📥 Savat" : "📥 Корзина";
+    }
 
 
 }

@@ -4,6 +4,7 @@ import org.example.newbot.bot.Kyb;
 import org.example.newbot.model.Branch;
 import org.example.newbot.model.Category;
 import org.example.newbot.model.Location;
+import org.example.newbot.model.Product;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -149,5 +150,32 @@ public class UserOnlineMagazineKyb extends Kyb {
         row.add(lang.equals("uz") ? mainMenu : mainMenuRu);
         rows.add(row);
         return rows;
+    }
+
+
+    public ReplyKeyboardMarkup setProductsUser(List<Product> list, String lang) {
+        KeyboardRow row = new KeyboardRow();
+        List<KeyboardRow> rows = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            row.add(new KeyboardButton(lang.equals("uz") ? list.get(i).getNameUz() : list.get(i).getNameRu()));
+            if ((i + 1) % 2 == 0) {
+                rows.add(row);
+                row = new KeyboardRow();
+            }
+        }
+        rows.add(row);
+        row = new KeyboardRow();
+        row.add(lang.equals("uz") ? backButton : backButtonRu);
+        rows.add(row);
+        return markup(rows);
+    }
+
+    public ReplyKeyboardMarkup backAndBasket(String lang) {
+        KeyboardRow row = new KeyboardRow();
+        List<KeyboardRow> rows = new ArrayList<>();
+        row.add(new KeyboardButton(lang.equals("uz") ? backButton : backButtonRu));
+        row.add(new KeyboardButton(cardBtn(lang)));
+        rows.add(row);
+        return markup(rows);
     }
 }

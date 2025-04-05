@@ -9,6 +9,8 @@ import org.example.newbot.bot.roleuser.RoleUser;
 import org.example.newbot.bot.roleuser.UserFunction;
 import org.example.newbot.bot.roleuser.UserKyb;
 import org.example.newbot.dto.ResponseDto;
+import org.example.newbot.model.BotInfo;
+import org.example.newbot.model.BotUser;
 import org.example.newbot.model.User;
 import org.example.newbot.repository.BotInfoRepository;
 import org.example.newbot.service.BotPriceService;
@@ -18,8 +20,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -60,6 +64,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private Long superAdminChatId;
 
 
+    @SneakyThrows
     @Override
     public void onUpdateReceived(Update update) {
         String username, firstname, lastname, nickname;
@@ -70,6 +75,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             firstname = message.getFrom().getFirstName();
             lastname = message.getFrom().getLastName();
             chatId = message.getChatId();
+
         } else if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
             username = callbackQuery.getFrom().getUserName();
@@ -93,6 +99,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         user.setNickname(nickname);
         user.setUsername(username);
         userService.save(user);
+
         if (chatId.equals(superAdminChatId)) {
             new RoleAdmin(new AdminFunction(
                     this, userService, adminKyb,
@@ -211,6 +218,17 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void editMessageText(Long chatId, Integer messageId, String text) {
         try {
             execute(EditMessageText.builder().chatId(chatId).messageId(messageId).text(text).parseMode("HTML").build());
+        } catch (TelegramApiException e) {
+            log.error(e);
+        }
+    }
+
+    private void setActions(BotInfo botInfo, Long chatId) {
+        SendChatAction action = new SendChatAction();
+        action.setChatId(chatId);
+        action.setAction(ActionType.TYPING);
+        try {
+            execute(action);
         } catch (TelegramApiException e) {
             log.error(e);
         }

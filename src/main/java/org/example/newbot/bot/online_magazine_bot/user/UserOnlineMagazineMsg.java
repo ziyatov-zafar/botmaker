@@ -1,5 +1,11 @@
 package org.example.newbot.bot.online_magazine_bot.user;
 
+import org.example.newbot.model.Branch;
+import org.telegram.telegrambots.meta.api.objects.Location;
+
+import static org.example.newbot.bot.online_magazine_bot.user.BranchUtil.formatDistance;
+import static org.example.newbot.bot.online_magazine_bot.user.BranchUtil.haversine;
+
 public class UserOnlineMagazineMsg {
     public String requestLang(String nickname) {
         return """
@@ -111,4 +117,62 @@ public class UserOnlineMagazineMsg {
                 "⚠️ Раздел <b>%s</b> в настоящее время не работает.\n\nОжидается, что он скоро будет запущен. Вы можете сделать заказ через меню <b>Оформить заказ</b>.".formatted(btn);
 
     }
+
+    public String branchInformationWithDistance(String lang, Branch branch, Location location) {
+        String branchInfo = branchInformation(lang, branch);
+        double userLon = location.getLongitude();
+        double userLat = location.getLatitude();
+        double distanceInKm = haversine(userLat, userLon, branch.getLatitude(), branch.getLongitude());
+        String formattedDistance = formatDistance(distanceInKm); // Masofani formatlash
+        if (lang.equals("uz")) {
+            return branchInfo + "\n📍 <b>Manzil:</b> " + branch.getAddress() + "\n" + "📏 Masofa: " + formattedDistance;
+        } else {
+            return branchInfo + "\n📍 <b>Адрес:</b> " + branch.getAddress() + "\n" + "📏 Расстояние: " + formattedDistance;
+        }
+    }
+
+    public String branchInformation(String lang, Branch branch) {
+        if (lang.equals("uz")) {
+            return String.format("""
+                            🏢 <b>%s</b> (%s)
+                            📍 <b>Mo'ljal:</b> %s
+                            🕒 <b>Ish vaqti:</b> %s
+                            📞 <b>Telefon raqami:</b> %s
+                            📍 <b>Manzil:</b> %s
+                            """,
+                    branch.getName(),
+                    branch.getDescription(),
+                    branch.getDestination(),
+                    branch.getWorkingHours(),
+                    branch.getPhone(),
+                    branch.getAddress());
+        } else {
+            return String.format("""
+                            🏢 <b>%s</b> (%s)
+                            🎯 <b>Назначение:</b> %s
+                            🕒 <b>Рабочие часы:</b> %s
+                            📞 <b>Телефонный номер:</b> %s
+                            📍 <b>Адрес:</b> %s
+                            """,
+                    branch.getName(),
+                    branch.getDescription(),
+                    branch.getDestination(),
+                    branch.getWorkingHours(),
+                    branch.getPhone(),
+                    branch.getAddress());
+        }
+    }
+
+
+    public String emptyProducts(String categoryName, String lang) {
+        if (lang.equals("uz")) {
+            return String.format("""
+                %s ning mahsulotlari tez orada joylanadi, boshqa kategoriyadagi mahsulotlarni kirib ko'rishingiz mumkin.""", categoryName);
+        } else if (lang.equals("ru")) {
+            return String.format("""
+                В категории %s товары скоро появятся, вы можете посмотреть товары в других категориях.""", categoryName);
+        }
+        return "";
+    }
+
 }

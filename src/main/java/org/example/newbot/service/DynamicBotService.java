@@ -17,9 +17,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.GetMe;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -204,7 +206,13 @@ public class DynamicBotService {
         Optional<BotInfo> bOp = botInfoRepository.findById(botId);
         if (bOp.isEmpty())
             return;
+        Optional<BotInstance> botInstance = findBotById(botId);
+        if (botInstance.isEmpty()) {
+            log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
+            return;
+        }
         BotInfo botInfo = bOp.get();
+
         if (botInfo.getType().equals("online-magazine")) {
             OnlineMagazineBot onlineMagazineBot = new OnlineMagazineBot(
                     this, botInfoRepository,
@@ -264,6 +272,23 @@ public class DynamicBotService {
         }
     }
 
+    public void setActive(Long botId, Long chatId) {
+        Optional<BotInstance> botInstance = findBotById(botId);
+        if (botInstance.isEmpty()) {
+            log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
+            return;
+        }
+        TelegramLongPollingBot bot = botInstance.get().getBot();
+        SendChatAction action = new SendChatAction();
+        action.setChatId(chatId);
+        action.setAction(ActionType.TYPING);
+        // 4. Xabarni yuborish
+        try {
+            bot.execute(action);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
     public ResponseDto<Void> sendMessage(Long botId, Long chatId, String text, ReplyKeyboardMarkup markup) {
         Optional<BotInstance> botInstance = findBotById(botId);
         if (botInstance.isEmpty()) {
@@ -272,6 +297,7 @@ public class DynamicBotService {
         }
 
         try {
+
             SendMessage message = new SendMessage();
             message.setChatId(chatId.toString());
             message.setText(text);
@@ -380,14 +406,19 @@ public class DynamicBotService {
         }
 
         try {
+
             // 3. Ogohlantirish xabarini tayyorlash
             AnswerCallbackQuery answer = new AnswerCallbackQuery();
             answer.setCallbackQueryId(callbackQuery.getId());
             answer.setText(alertMessageText);
+            answer.setShowAlert(false);
+            answer.setCacheTime(2);
             answer.setShowAlert(true); // Foydalanuvchiga popup tarzida ko'rinadi
 
-            // 4. Xabarni yuborish
             botInstance.get().getBot().execute(answer);
+
+
+
 
             return new ResponseDto<>(true, "Ogohlantirish xabari muvaffaqiyatli yuborildi");
 

@@ -6,15 +6,13 @@ import org.example.newbot.bot.Status;
 import org.example.newbot.bot.online_magazine_bot.admin.AdminOnlineMagazineKyb;
 import org.example.newbot.dto.Json;
 import org.example.newbot.dto.ResponseDto;
-import org.example.newbot.model.BotInfo;
-import org.example.newbot.model.BotUser;
-import org.example.newbot.model.Branch;
-import org.example.newbot.model.Category;
+import org.example.newbot.model.*;
 import org.example.newbot.repository.BranchRepository;
 import org.example.newbot.repository.LocationRepository;
 import org.example.newbot.service.*;
 import org.telegram.telegrambots.meta.api.objects.Contact;
 import org.telegram.telegrambots.meta.api.objects.Location;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.util.List;
@@ -325,5 +323,124 @@ public class UserOnlineMagazineFunction {
             bot.sendMessage(botInfo.getId(), user.getChatId(), msg.categoryMenu(lang), kyb.setCategories(list, lang));
             return true;
         }
+    }
+
+    private boolean sendProducts(BotInfo botInfo, BotUser user) {
+        String lang = user.getLang();
+        Long botId = botInfo.getId();
+        List<Product> list = productService.findAllByCategoryId(user.getCategoryId()).getData();
+        Category category = categoryService.findById(user.getCategoryId()).getData();
+        String categoryName = lang.equals("uz") ? category.getNameUz() : category.getNameRu();
+        if (list.isEmpty()) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.emptyProducts(categoryName, lang), kyb.setCategories(categoryService.findAllByBotId(botId).getData(), lang));
+            return false;
+        } else {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.categoryMenu(lang), kyb.setProductsUser(list, lang));
+            return true;
+        }
+    }
+
+    public void chooseBranch(BotInfo botInfo, BotUser user, String text) {
+        if (text.equals(backButton)) {
+            menu(botInfo, user, menuBtn(user.getLang())[0]);
+        } else {
+            Branch checkBranch = branchRepository.findByNameAndActiveIsTrue(text);
+            if (checkBranch != null) {
+                user.setLatitude(checkBranch.getLatitude());
+                user.setLongitude(checkBranch.getLongitude());
+                user.setAddress(checkBranch.getAddress());
+                userService.save(user);
+                if (sendCategories(botInfo, user)) {
+                    eventCode(user, "pickupCategoryMenu");
+                }
+            } else {
+                wrongBtn(botInfo, user, kyb.chooseBranch(user.getLang(), branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId())));
+            }
+        }
+    }
+
+    public void chooseBranch(BotInfo botInfo, BotUser user, Location location) {
+        List<Branch> branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId());
+        Branch branch = BranchUtil.findNearestBranch(branches, location.getLatitude(), location.getLongitude());
+        if (!branch.getHasImage())
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.branchInformationWithDistance(user.getLang(), branch, location));
+        else {
+            bot.sendPhoto(botInfo.getId(), user.getChatId(), branch.getImageUrl(), kyb.deliveryType(user.getLang()), false, msg.branchInformationWithDistance(user.getLang(), branch, location));
+        }
+        if (sendCategories(botInfo, user)) {
+            eventCode(user, "pickupCategoryMenu");
+        }
+    }
+
+    public void deliveryCategoryMenu(BotInfo botInfo, BotUser user, String text) {
+        handleCategory(botInfo, user, text);
+    }
+
+    private void handleCategory(BotInfo botInfo, BotUser user, String text) {
+        if (inArray(text, backButton, backButtonRu)) {
+            if (user.getEventCode().equals("deliveryCategoryMenu")) {
+                deliveryType(botInfo, user, ConstVariable.deliveryType(user.getLang())[0]);
+            } else if (user.getEventCode().equals("pickupCategoryMenu")) {
+                deliveryType(botInfo, user, ConstVariable.deliveryType(user.getLang())[1]);
+            }
+            return;
+        }
+        ResponseDto<Category> checkCategory = checkCategory(botInfo, user, text);
+        if (checkCategory.isSuccess()) {
+            Category category = checkCategory.getData();
+            user.setCategoryId(category.getId());
+            if (sendProducts(botInfo, user)) {
+                user.setEventCode(user.getDeliveryType() + "ProductMenu");
+                userService.save(user);
+            }
+        } else {
+            List<Category> list = categoryService.findAllByBotId(botInfo.getId()).getData();
+            wrongBtn(botInfo, user, kyb.setCategories(list, user.getLang()));
+        }
+    }
+
+
+    private ResponseDto<Category> checkCategory(BotInfo botInfo, BotUser user, String text) {
+        ResponseDto<Category> checkCategory;
+        if (user.getLang().equals("uz")) {
+            checkCategory = categoryService.findByNameUz(botInfo.getId(), text);
+        } else checkCategory = categoryService.findByNameRu(botInfo.getId(), text);
+        return checkCategory;
+    }
+
+    public void pickupCategoryMenu(BotInfo botInfo, BotUser user, String text) {
+        handleCategory(botInfo, user, text);
+    }
+
+    public void pickupProductMenu(BotInfo botInfo, BotUser user, String text) {
+        handleProduct(botInfo, user, text);
+    }
+
+    private void handleProduct(BotInfo botInfo, BotUser user, String text) {
+        if (inArray(text, backButton, backButtonRu)) {
+            eventCode(user, user.getDeliveryType() + "CategoryMenu");
+            sendCategories(botInfo, user);
+            return;
+        }
+        ResponseDto<Product> checkProduct;
+        if (user.getLang().equals("uz")) {
+            checkProduct = productService.findByNameUz(
+                    text, user.getCategoryId()
+            );
+        } else {
+            checkProduct = productService.findByNameRu(
+                    text, user.getCategoryId()
+            );
+        }
+        List<ProductVariant>variants = productVariantService.findAllByProductId(checkProduct.getData().getId()).getData();
+        if (checkProduct.isSuccess()) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), text , kyb.backAndBasket(user.getLang()));
+            InlineKeyboardMarkup m = null;
+            bot.sendPhoto(botInfo.getId(), user.getChatId(),variants.get(0).getImg(),m,true , "caption");
+        }
+    }
+
+    public void deliveryProductMenu(BotInfo botInfo, BotUser user, String text) {
+        handleProduct(botInfo, user, text);
     }
 }

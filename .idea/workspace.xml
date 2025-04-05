@@ -5,44 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8c8ccb28-d810-4f4f-95e5-059e5dfc90ca" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/images/for-location.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/Status.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/BranchUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/BranchRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/StaticVariable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/StaticVariable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/TelegramBot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/TelegramBot.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/OnlineMagazineBot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/OnlineMagazineBot.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/admin/AdminOnlineMagazineFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/admin/AdminOnlineMagazineFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/admin/AdminOnlineMagazineKyb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/admin/AdminOnlineMagazineKyb.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/BranchUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/BranchUtil.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/ConstVariable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/ConstVariable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineFunction.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineKyb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineKyb.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineMsg.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineMsg.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/dto/Json.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/dto/Json.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/BotUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/BotUser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/Location.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/Location.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/BotUserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/BotUserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/LocationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/LocationRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/BotUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/BotUserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/Cart.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/Cart.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/impl/BotUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/impl/BotUserServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/StaticVariable.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/StaticVariable.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/OnlineMagazineBot.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/OnlineMagazineBot.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/admin/AdminOnlineMagazineFunction.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/admin/AdminOnlineMagazineFunction.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/admin/AdminOnlineMagazineKyb.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/admin/AdminOnlineMagazineKyb.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineFunction.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineFunction.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineKyb.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineKyb.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser$BotUserBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser$BotUserBuilder.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/repository/BotUserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/repository/BotUserRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/BotUserService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/BotUserService.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$2.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/impl/BotUserServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/impl/BotUserServiceImpl.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -153,7 +134,7 @@
       <workItem from="1743668260934" duration="13458000" />
       <workItem from="1743736975307" duration="12034000" />
       <workItem from="1743757608287" duration="16342000" />
-      <workItem from="1743824127199" duration="6671000" />
+      <workItem from="1743824127199" duration="20919000" />
     </task>
     <servers />
   </component>
