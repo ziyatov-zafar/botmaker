@@ -7,7 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface LocationRepository extends JpaRepository<Location, Long> {
-    List<Location> findAllByUserIdOrderByIdAsc(Long userId);
+    List<Location> findAllByUserIdAndActiveIsTrueOrderByIdAsc(Long userId);
 
-    Location findByAddress(String address);
+    Location findByAddressAndUserId(String address,Long userId);
 }

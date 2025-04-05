@@ -38,4 +38,9 @@ public class BotUser {
     private Long productVariantId;
 
     private String deliveryType;
+
+    private Double latitude;
+    private Double longitude;
+    private String address;
+    private Integer branchId;
 }

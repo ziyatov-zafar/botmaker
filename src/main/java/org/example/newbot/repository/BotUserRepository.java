@@ -45,6 +45,8 @@ public interface BotUserRepository extends JpaRepository<BotUser, Long> {
 
     @Query("SELECT u FROM BotUser u JOIN u.bots b WHERE b.id = :botId AND u.role=:role ORDER BY u.id DESC")
     Page<BotUser> findUsersByBotIdAndRole(@Param("botId") Long botId, @Param("role") String role, Pageable pageable);
+    @Query("SELECT u FROM BotUser u JOIN u.bots b WHERE b.id = :botId AND u.role=:role ORDER BY u.id DESC")
+    List<BotUser> findUsersByBotIdAndRole(@Param("botId") Long botId, @Param("role") String role);
 
     @Query("SELECT u FROM BotUser u JOIN FETCH u.bots b WHERE u.chatId = :chatId AND b.id = :botId")
     Optional<BotUser> findUserInBot(@Param("botId") Long botId, @Param("chatId") Long chatId);

@@ -11,6 +11,7 @@ import org.example.newbot.bot.online_magazine_bot.user.UserOnlineMagazineMsg;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.BotInfo;
 import org.example.newbot.repository.BotInfoRepository;
+import org.example.newbot.repository.BranchRepository;
 import org.example.newbot.repository.LocationRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.BotSession;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +52,7 @@ public class DynamicBotService {
     private final ProductService productService;
     private final ProductVariantService productVariantService;
     private final LocationRepository locationRepository;
+    private final BranchRepository branchRepository;
 
     @Value("${size}")
     public int size;
@@ -57,13 +60,14 @@ public class DynamicBotService {
     public Long adminChatId;
 
 
-    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService, LocationRepository locationRepository) {
+    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService, LocationRepository locationRepository, BranchRepository branchRepository) {
         this.botInfoRepository = botInfoRepository;
         this.botUserService = botUserService;
         this.categoryService = categoryService;
         this.productService = productService;
         this.productVariantService = productVariantService;
         this.locationRepository = locationRepository;
+        this.branchRepository = branchRepository;
     }
 
 
@@ -207,12 +211,12 @@ public class DynamicBotService {
                     botUserService, new AdminOnlineMagazineFunction(
                     botInfoRepository, botUserService, this,
                     new AdminOnlineMagazineKyb(), categoryService,
-                    productService, productVariantService
+                    productService, productVariantService,branchRepository
             ), new UserOnlineMagazineFunction(
                     botUserService, this, new UserOnlineMagazineKyb(),
                     categoryService, productService, productVariantService,
-                    new UserOnlineMagazineMsg(),locationRepository
-            ));
+                    new UserOnlineMagazineMsg(),locationRepository,branchRepository
+            ),branchRepository);
             onlineMagazineBot.onlineMagazineBotMenu(botInfo, chatId, update, adminChatId);
         } else if (botInfo.getType().equals("logistic-bot")) {
             sendMessage(botId, chatId, "online logistik xush kelibsiz");
@@ -429,6 +433,7 @@ public class DynamicBotService {
             message.setPhoto(new InputFile(fileId));
             message.setReplyMarkup(markup);
             message.setCaption(caption);
+            message.setParseMode(ParseMode.HTML);
             message.setProtectContent(protectContent);
             botInstance.get().getBot().execute(message);
             return new ResponseDto<>(true, "Ok");
@@ -452,6 +457,28 @@ public class DynamicBotService {
             message.setChatId(chatId.toString());
             message.setPhoto(new InputFile(fileId));
             message.setReplyMarkup(markup);
+            message.setCaption(caption);
+            message.setParseMode(ParseMode.HTML);
+            message.setProtectContent(protectContent);
+            botInstance.get().getBot().execute(message);
+            return new ResponseDto<>(true, "Ok");
+        } catch (TelegramApiException e) {
+            log.error("Xabar yuborishda xato. Bot ID: {}, Chat ID: {}. Xato: {}",
+                    botId, chatId, e.getMessage(), e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+    }
+    public ResponseDto<Void> sendPhoto(Long botId, Long chatId, boolean protectContent, String caption,String imgUrl) {
+        Optional<BotInstance> botInstance = findBotById(botId);
+        if (botInstance.isEmpty()) {
+            log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
+            return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s}".formatted(botId));
+        }
+        try {
+            SendPhoto message = new SendPhoto();
+            message.setChatId(chatId.toString());
+            message.setPhoto(new InputFile(new File(imgUrl)));
+            message.setParseMode(ParseMode.HTML);
             message.setCaption(caption);
             message.setProtectContent(protectContent);
             botInstance.get().getBot().execute(message);

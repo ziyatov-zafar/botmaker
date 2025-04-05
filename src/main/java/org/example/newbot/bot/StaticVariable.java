@@ -18,7 +18,7 @@ public class StaticVariable {
             "\uD83D\uDCB8 \uD835\uDDDB\uD835\uDDDC\uD835\uDDE6\uD835\uDDE2\uD835\uDDD5\uD835\uDDDC\uD835\uDDE0",
             "\uD83D\uDCE8 \uD835\uDDEC\uD835\uDDE2\uD835\uDDE5\uD835\uDDD7\uD835\uDDD4\uD835\uDDE0"
     };
-    public static String backButton = "\uD83D\uDD19 Orqaga qaytish";
+    public static String backButton = "🔙 Orqaga";
     public static String backButtonRu = "\uD83D\uDD19 Назад";
     public static String mainMenu = "\uD83C\uDFE0 Asosiy menyu";
     public static String mainMenuRu = "\uD83C\uDFE0 Главное меню";
@@ -45,9 +45,16 @@ public class StaticVariable {
 
     public static String[] adminOnlineMagazineMenu = {
             "\uD83D\uDC65 Foydalanuvchilar", "\uD83D\uDCE6 Buyurtmalar", "🛍 Mahsulotlar",
-            "📊 Statistika", "📨 Xabar yuborish"/*, "⚙️ Sozlamalar"*/
+            "📊 Statistika", "📨 Xabar yuborish", "🏢 Filiallar bo'limi"
     };
+    public static String[] adminOnlineMagazineBranchMenu = {
+            "📋 Barcha filiallar ro'yxati",
+            "➕ Filial qo'shish", backButton, mainMenu
+    };
+
+
     public static String[] adminOnlineMagazineUsersPage = {
+
             "📋 Barcha mijozlar ro‘yxati",               // Foydalanuvchilarning to‘liq ro‘yxati
             "🚫 Bloklangan foydalanuvchilar",            // Bloklangan foydalanuvchilar ro‘yxati
             "🔎 Foydalanuvchilarni qidirish",               // Username,Nickname,PhoneNumber bo‘yicha izlash
@@ -262,4 +269,11 @@ public class StaticVariable {
                 🛠️ Adminlar: %d ta
                 """.formatted(botUsername, userSize, blocks, users, admins);
     }
+
+    public static String[] isSuccessForText(String lang) {
+        return lang.equals("uz")
+                ? new String[]{"✅ Ha", "❌ Yo‘q"}
+                : new String[]{"✅ Да", "❌ Нет"};
+    }
+
 }

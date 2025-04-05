@@ -2,18 +2,26 @@ package org.example.newbot.bot.online_magazine_bot.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.example.newbot.bot.Status;
 import org.example.newbot.bot.online_magazine_bot.admin.AdminOnlineMagazineKyb;
+import org.example.newbot.dto.Json;
+import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.BotInfo;
 import org.example.newbot.model.BotUser;
-import org.example.newbot.model.Location;
+import org.example.newbot.model.Branch;
+import org.example.newbot.model.Category;
+import org.example.newbot.repository.BranchRepository;
 import org.example.newbot.repository.LocationRepository;
 import org.example.newbot.service.*;
 import org.telegram.telegrambots.meta.api.objects.Contact;
+import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.util.List;
 
 import static org.example.newbot.bot.StaticVariable.*;
+import static org.example.newbot.bot.Status.OPEN;
+import static org.example.newbot.bot.online_magazine_bot.user.ConstVariable.location;
 import static org.example.newbot.bot.online_magazine_bot.user.ConstVariable.menuBtn;
 
 @RequiredArgsConstructor
@@ -28,6 +36,7 @@ public class UserOnlineMagazineFunction {
     private final ProductVariantService productVariantService;
     private final UserOnlineMagazineMsg msg;
     private final LocationRepository locationRepository;
+    private final BranchRepository branchRepository;
 
     public void reply(BotInfo botInfo, Long chatId, BotUser user, Long newChatId, Integer messageId, boolean isAdmin) {
         user.setChatIdHelp(newChatId);
@@ -40,28 +49,51 @@ public class UserOnlineMagazineFunction {
         bot.sendMessage(botInfo.getId(), chatId, message, kyb.backBtn(lang));
     }
 
-    public void replyMessage(BotInfo botInfo, BotUser user, String text) {
+    public void replyMessage(BotInfo botInfo, BotUser user, String text, boolean isAll) {
         String lang = user.getLang();
         if (inArray(text, backButton, backButtonRu)) {
             start(botInfo, user, false);
-
             return;
         }
-        Long chatIdHelp = user.getChatIdHelp();
-        BotUser botUser = userService.findByUserChatId(chatIdHelp, botInfo.getId()).getData();
-        if (lang == null) lang = "uz";
-        String username = botUser.getUsername() != null ? "@" + botUser.getUsername() : "—";
-        bot.sendMessage(botInfo.getId(), chatIdHelp, """
-                🆔 Foydalanuvchi ma'lumotlari:
-                
-                🏷️ Niki: %s
-                🔗 Username: %s
-                🆔 ID: %d
-                💬 Chat ID: %d
-                
-                📝 Foydalanuvchi qoldirgan izoh:
-                %s
-                """.formatted(botUser.getNickname(), username, botUser.getId(), botUser.getChatId(), text), kyb.replyBtn(user.getChatId(), "uz"));
+
+
+        String username = user.getUsername() != null ? "@" + user.getUsername() : "—";
+        if (!isAll) {
+            Long chatIdHelp = user.getChatIdHelp();
+            BotUser botUser = userService.findByUserChatId(chatIdHelp, botInfo.getId()).getData();
+            if (lang == null) lang = "uz";
+            bot.sendMessage(botInfo.getId(), chatIdHelp, """
+                    🆔 Foydalanuvchi ma'lumotlari:
+                    
+                    🏷️ Niki: %s
+                    🔗 Username: %s
+                    🆔 ID: %d
+                    💬 Chat ID: %d
+                    
+                    📝 Foydalanuvchi qoldirgan izoh:
+                    %s
+                    """.formatted(user.getNickname(), username, user.getId(), botUser.getChatId(), text), kyb.replyBtn(user.getChatId(), "uz"));
+        } else {
+            List<BotUser> admins = userService.findAllByRole(botInfo.getId(), "admin").getData();
+            ResponseDto<BotUser> checkSuperAdmin = userService.findByUserChatId(bot.adminChatId, botInfo.getId());
+            if (checkSuperAdmin.getData() != null && checkSuperAdmin.isSuccess()) {
+                admins.add(checkSuperAdmin.getData());
+            }
+            for (BotUser admin : admins) {
+                bot.sendMessage(botInfo.getId(), admin.getChatId(), """
+                        🆔 Foydalanuvchi ma'lumotlari:
+                        
+                        🏷️ Niki: %s
+                        🔗 Username: %s
+                        🆔 ID: %d
+                        💬 Chat ID: %d
+                        
+                        📝 Foydalanuvchi qoldirgan izoh:
+                        %s
+                        """.formatted(user.getNickname(), username, user.getId(), admin.getChatId(), text), kyb.replyBtn(user.getChatId(), "uz"));
+            }
+        }
+
         bot.sendMessage(botInfo.getId(), user.getChatId(),
                 lang.equals("uz") ? "✅ Xabaringiz muvaffaqiyatli yetkazildi" : "✅ Ваше сообщение успешно доставлено",
                 kyb.backBtn(lang));
@@ -99,6 +131,10 @@ public class UserOnlineMagazineFunction {
         }
         eventCode(user, eventCode);
         bot.sendMessage(botId, user.getChatId(), s, markup);
+    }
+
+    private void start(BotInfo botInfo, BotUser user) {
+        start(botInfo, user, false);
     }
 
     private void eventCode(BotUser user, String eventCode) {
@@ -164,7 +200,7 @@ public class UserOnlineMagazineFunction {
         if (inArray(text, backButton, backButtonRu)) {
             start(botInfo, user, false);
         } else {
-            replyMessage(botInfo, user, text);
+            replyMessage(botInfo, user, text, true);
         }
     }
 
@@ -175,11 +211,119 @@ public class UserOnlineMagazineFunction {
             start(botInfo, user, false);
             return;
         } else if (inArray(text, buttons[0])) {
-            user.setDeliveryType("🚚 Yetkazib berish");
+            user.setDeliveryType("delivery");
             user.setEventCode("chooseLocation");
             userService.save(user);
             bot.sendMessage(botInfo.getId(), user.getChatId(), msg.getLocation(lang), kyb.getLocation(lang));
+        } else if (inArray(text, buttons[1])) {
+            user.setDeliveryType("pickup");
+            user.setEventCode("chooseBranch");
+            List<Branch> branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId());
+            if (branches.isEmpty()) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.notFoundBranch(lang, text), kyb.deliveryType(user.getLang()));
+                return;
+            }
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.chooseBranch(lang), kyb.chooseBranch(user.getLang(), branches));
+            userService.save(user);
         }
 
+    }
+
+    public void chooseLocation(BotInfo botInfo, BotUser user, Location location) {
+        try {
+            org.example.newbot.model.Location l = new org.example.newbot.model.Location();
+            Double longitude = location.getLongitude();
+            Double latitude = location.getLatitude();
+            Json json = new Json().setAddress(latitude, longitude);
+            if (json == null || json.getAddress() == null || !json.getCountry().getCode().equals("uz")) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.wrongLocation(user.getLang()), kyb.getLocation(user.getLang()));
+                return;
+            }
+            org.example.newbot.model.Location checkAddress = locationRepository.findByAddressAndUserId(json.getAddress(), user.getId());
+            boolean isSave = true;
+            if (checkAddress != null) {
+                isSave = false;
+                l = checkAddress;
+            } else {
+                l.setAddress(json.getAddress());
+                l.setLatitude(latitude);
+                l.setLongitude(longitude);
+                l.setUserId(user.getId());
+            }
+            l.setActive(false);
+            locationRepository.save(l);
+            user.setLatitude(latitude);
+            user.setLongitude(longitude);
+            user.setAddress(json.getAddress());
+            userService.save(user);
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.isSuccessLocation(user.getLang(), json.getAddress()), kyb.isSuccessLocation(user.getLang()));
+        } catch (Exception e) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), e.getMessage());
+        }
+
+    }
+
+    public void chooseLocation(BotInfo botInfo, BotUser user, String text) {
+        String lang = user.getLang();
+        String[] locations = location(lang);
+        if (text.equals(locations[0])) {
+            List<org.example.newbot.model.Location> list = locationRepository.findAllByUserIdAndActiveIsTrueOrderByIdAsc(user.getId());
+            if (list.isEmpty()) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.emptyLocation(lang), kyb.getLocation(lang));
+                return;
+            }
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.locationList(lang), kyb.locationList(list, lang));
+            eventCode(user, "locationList");
+        } else if (text.equals(locations[2])) {
+//            deliveryType(botInfo, user, ConstVariable.deliveryType(lang)[0]);
+            menu(botInfo, user, menuBtn(user.getLang())[0]);
+        } else if (text.equals(isSuccessForText(lang)[0])) {
+            org.example.newbot.model.Location checkAddress = locationRepository.findByAddressAndUserId(user.getAddress(), user.getId());
+            checkAddress.setActive(true);
+            locationRepository.save(checkAddress);
+            if (sendCategories(botInfo, user)) {
+                eventCode(user, "deliveryCategoryMenu");
+            }
+        } else if (text.equals(isSuccessForText(lang)[1])) {
+            deliveryType(botInfo, user, ConstVariable.deliveryType(lang)[0]);
+        } else wrongBtn(botInfo, user, kyb.getLocation(lang));
+    }
+
+    public void locationList(BotInfo botInfo, BotUser user, String text) {
+        String lang = user.getLang();
+        if (inArray(text, backButton, backButtonRu)) {
+            deliveryType(botInfo, user, ConstVariable.deliveryType(lang)[0]);
+        } else {
+            org.example.newbot.model.Location checkLocation = locationRepository.findByAddressAndUserId(text, user.getId());
+            if (checkLocation != null) {
+                user.setLatitude(checkLocation.getLatitude());
+                user.setLongitude(checkLocation.getLongitude());
+                user.setAddress(checkLocation.getAddress());
+                userService.save(user);
+                if (sendCategories(botInfo, user)) {
+                    eventCode(user, "deliveryCategoryMenu");
+                }
+            } else {
+                wrongBtn(botInfo, user, kyb.locationList(
+                        locationRepository.findAllByUserIdAndActiveIsTrueOrderByIdAsc(
+                                user.getId()
+                        ), lang)
+                );
+            }
+        }
+    }
+
+    private boolean sendCategories(BotInfo botInfo, BotUser user) {
+        String lang = user.getLang();
+        Long botId = botInfo.getId();
+        List<Category> list = categoryService.findAllByBotId(botId).getData();
+        if (list.isEmpty()) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.emptyCategory(lang) + "\n\n" + msg.menu(lang), kyb.menu(user.getLang()));
+            eventCode(user, "menu");
+            return false;
+        } else {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.categoryMenu(lang), kyb.setCategories(list, lang));
+            return true;
+        }
     }
 }

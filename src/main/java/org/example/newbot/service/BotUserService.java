@@ -12,6 +12,7 @@ public interface BotUserService {
     ResponseDto<List<BotUser>> findAll(Long botId);
     ResponseDto<Page<BotUser>>findAll(int page, int size , Long botId);
     ResponseDto<Page<BotUser>>findAllByRole(int page, int size , Long botId,String role);
+    ResponseDto<List<BotUser>>findAllByRole(Long botId,String role);
     ResponseDto<Void> save(BotUser user);
 
 

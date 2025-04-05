@@ -1,10 +1,7 @@
 package org.example.newbot.bot.online_magazine_bot.admin;
 
 import org.example.newbot.bot.Kyb;
-import org.example.newbot.model.BotUser;
-import org.example.newbot.model.Category;
-import org.example.newbot.model.ProductVariant;
-import org.example.newbot.model.User;
+import org.example.newbot.model.*;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -18,6 +15,7 @@ import static org.example.newbot.bot.StaticVariable.*;
 
 public class AdminOnlineMagazineKyb extends Kyb {
     public ReplyKeyboardMarkup menu = setKeyboards(adminOnlineMagazineMenu, 2);
+    public ReplyKeyboardMarkup branchMenu = setKeyboards(adminOnlineMagazineBranchMenu, 2);
 
     public ReplyKeyboardMarkup usersPage() {
         KeyboardRow row = new KeyboardRow();
@@ -260,4 +258,61 @@ public class AdminOnlineMagazineKyb extends Kyb {
         rows.add(row);
         return new InlineKeyboardMarkup(rows);
     }
+
+    public ReplyKeyboardMarkup branches(List<Branch> branches) {
+        KeyboardRow row = new KeyboardRow();
+        List<KeyboardRow> rows = new ArrayList<>();
+
+        int c = 0;
+        for (Branch branch : branches) {
+            c++;
+            row.add(new KeyboardButton(branch.getName()));
+            if (c == 2) {
+                c = 0;
+                rows.add(row);
+                row = new KeyboardRow();
+            }
+        }
+        rows.add(row);
+        row = new KeyboardRow();
+        row.add(new KeyboardButton(backButton));
+        row.add(new KeyboardButton(mainMenu));
+        rows.add(row);
+        return markup(rows);
+    }
+
+    public InlineKeyboardMarkup crudBranch(boolean hasImg) {
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        List<InlineKeyboardButton> row3 = new ArrayList<>();
+        List<InlineKeyboardButton> row4 = new ArrayList<>();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        // Birinchi qatordagi tugmalar
+        row1.add(createButton("❌ O'chirish", "delete"));
+        row1.add(createButton("📍 Manzil", "change_address"));
+        row1.add(createButton("📞 Telefon", "change_phone"));
+
+        // Ikkinchi qatordagi tugmalar
+        row2.add(createButton("📝 Tavsif", "change_description"));
+        row2.add(createButton("🎯 Mo'ljal", "change_destination"));
+        row2.add(createButton("🖼 Rasm", "change_image"));
+
+        // Uchinchi qatordagi tugmalar
+        row3.add(createButton("⏰ Ish vaqti", "change_working_hours"));
+        row3.add(createButton("✏️ Nom", "change_name"));
+
+        row4.add(createButton(hasImg ? "🖼 Rasmni olish" : "📷 Filial rasmini qo‘shish",
+                hasImg ? "remove_img" : "add_img"));
+
+
+        // Barcha qatorlarni birlashtiramiz
+        rows.add(row1);
+        rows.add(row2);
+        rows.add(row3);
+        rows.add(row4);
+
+        return new InlineKeyboardMarkup(rows);
+    }
+
 }

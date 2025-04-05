@@ -78,6 +78,17 @@ public class BotUserServiceImpl implements BotUserService {
     }
 
     @Override
+    public ResponseDto<List<BotUser>> findAllByRole(Long botId, String role) {
+        try {
+            List<BotUser> userPage = botUserRepository.findUsersByBotIdAndRole(botId, role);
+            return new ResponseDto<>(true, "Ok", userPage);
+        } catch (Exception e) {
+            log.error(e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+    }
+
+    @Override
     public ResponseDto<Page<BotUser>> findAllByRole(int page, int size, Long botId, String role) {
         try {
             Page<BotUser> userPage = botUserRepository.findUsersByBotIdAndRole(botId, role, PageRequest.of(page, size));

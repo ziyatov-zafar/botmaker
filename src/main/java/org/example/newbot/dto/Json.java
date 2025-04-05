@@ -20,7 +20,7 @@ import java.net.URLConnection;
 public class Json {
     @SerializedName("display_name")
     private String address;
-    @SerializedName("display_name")
+    @SerializedName("address")
     private Address country;
     public String jsonUrl(double lat, double lon) {
         return "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lon + "&zoom=155&addressdetails=1";

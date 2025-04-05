@@ -2,19 +2,27 @@ package org.example.newbot.bot.online_magazine_bot.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.example.newbot.dto.Json;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.*;
 import org.example.newbot.repository.BotInfoRepository;
+import org.example.newbot.repository.BranchRepository;
 import org.example.newbot.service.*;
 import org.springframework.data.domain.Page;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Location;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.example.newbot.bot.StaticVariable.*;
+import static org.example.newbot.bot.Status.DRAFT;
+import static org.example.newbot.bot.Status.OPEN;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -27,8 +35,21 @@ public class AdminOnlineMagazineFunction {
     private final CategoryService categoryService;
     private final ProductService productService;
     private final ProductVariantService productVariantService;
+    private final BranchRepository branchRepository;
 
     public void start(BotInfo botInfo, BotUser user) {
+        List<Branch> branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId());
+        boolean emptyBranches = branches.isEmpty();
+        if (emptyBranches) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), """
+                    📢 **Filiallar bo'limiga o'ting:**
+                    
+                    Hali birorta filial kiritmagansiz. Iltimos, filiallar bo'limiga o'tib, kerakli filiallarni kiritishingiz kerak. Aks holda botda xatoliklar yuzaga kelishi mumkin.
+                    
+                    ✅ **Filiallar qo'shish muhim!**
+                    """);
+
+        }
         bot.sendMessage(botInfo.getId(), user.getChatId(), "\uD83D\uDCCC *Asosiy menyuga xush kelibsiz!", kyb.menu);
         eventCode(user, "menu");
     }
@@ -56,8 +77,7 @@ public class AdminOnlineMagazineFunction {
             List<Category> categories = checkCategories.getData();
 
             if (categories.isEmpty()) {
-                String message = "⚠️ Sizda hozircha hech qanday kategoriya mavjud emas.\nYangi kategoriya qo'shish uchun \"%s\" tugmasini bosing."
-                        .formatted(addCategory);
+                String message = "⚠️ Sizda hozircha hech qanday kategoriya mavjud emas.\nYangi kategoriya qo'shish uchun \"%s\" tugmasini bosing.".formatted(addCategory);
                 bot.sendMessage(botId, user.getChatId(), message, kyb.setCategories(categories, true));
             } else {
                 String message = "📂 Sizning mavjud kategoriyalaringiz (" + categories.size() + " ta):";
@@ -70,6 +90,9 @@ public class AdminOnlineMagazineFunction {
         } else if (text.equals(adminOnlineMagazineMenu[4])) {
             bot.sendMessage(botId, user.getChatId(), "Xabar yubormoqchi bo'lgan odamingizni chat id sini kiriting", kyb.backBtn);
             eventCode(user, "send msg");
+        } else if (text.equals(adminOnlineMagazineMenu[5])) {
+            bot.sendMessage(botId, user.getChatId(), text, kyb.branchMenu);
+            eventCode(user, "branch menu");
         } else if (text.equals(backButton)) {
             start(botInfo, user);
         } else wrongBtn(botId, user.getChatId(), kyb.menu);
@@ -120,12 +143,7 @@ public class AdminOnlineMagazineFunction {
                     <code>alixon</code> yoki <code>ali</code> (nickname)
                     <code>+99890</code> yoki <code>1234</code> (telefon)""";
 
-            bot.sendMessage(
-                    botInfo.getId(),
-                    user.getChatId(),
-                    messageText,
-                    kyb.backBtn
-            );
+            bot.sendMessage(botInfo.getId(), user.getChatId(), messageText, kyb.backBtn);
             eventCode(user, "searching users");
         } else if (text.equals(adminOnlineMagazineUsersPage[3])) {
             String requestMessage = """
@@ -139,12 +157,7 @@ public class AdminOnlineMagazineFunction {
                     
                     <b>📌 Misol uchun:</b> <code>54231</code>""";
 
-            bot.sendMessage(
-                    botId,
-                    user.getChatId(),
-                    requestMessage,
-                    kyb.backBtn
-            );
+            bot.sendMessage(botId, user.getChatId(), requestMessage, kyb.backBtn);
 
             eventCode(user, "find by id");
         } else if (text.equals(backButton)) {
@@ -199,10 +212,10 @@ public class AdminOnlineMagazineFunction {
                 } else return;
                 if (list.isEmpty() && (role == null || role.equals("block"))) {
                     String alertText;
-                    if (role == null) alertText = "ℹ️ Hozirda foydalanuvchilar mavjud emas. "
-                            + "Shu sababli siz foydalanuvchilar bo'limiga yo'naltirildingiz";
-                    else alertText = "ℹ️ Hozirda bloklangan foydalanuvchilar mavjud emas. "
-                            + "Shu sababli siz foydalanuvchilar bo'limiga yo'naltirildingiz";
+                    if (role == null)
+                        alertText = "ℹ️ Hozirda foydalanuvchilar mavjud emas. " + "Shu sababli siz foydalanuvchilar bo'limiga yo'naltirildingiz";
+                    else
+                        alertText = "ℹ️ Hozirda bloklangan foydalanuvchilar mavjud emas. " + "Shu sababli siz foydalanuvchilar bo'limiga yo'naltirildingiz";
                     bot.alertMessage(botId, callbackQuery, alertText);
                     bot.deleteMessage(botId, user.getChatId(), messageId);
                     menu(botId, user, adminOnlineMagazineMenu[0], botInfo, adminChatId);
@@ -261,11 +274,7 @@ public class AdminOnlineMagazineFunction {
                         Boshqa foydalanuvchini tanlang yoki 
                         @me_mrx bilan bog'laning.""";
 
-                bot.alertMessage(
-                        botId,
-                        callbackQuery,
-                        warningMessage
-                );
+                bot.alertMessage(botId, callbackQuery, warningMessage);
                 return;
             }
             if (targetUser.getRole().equals("admin")) {
@@ -277,11 +286,7 @@ public class AdminOnlineMagazineFunction {
                         Boshqa foydalanuvchini tanlang yoki 
                         @me_mrx bilan bog'laning.""";
 
-                bot.alertMessage(
-                        botId,
-                        callbackQuery,
-                        warningMessage
-                );
+                bot.alertMessage(botId, callbackQuery, warningMessage);
                 return;
             }
             targetUser.setRole("block");
@@ -296,13 +301,9 @@ public class AdminOnlineMagazineFunction {
         bot.editMessageText(botId, user.getChatId(), messageId, updatedUserInfo, userActions);
 
         // 3. Foydalanuvchiga xabar yuborish
-        String userNotification = targetUser.getRole().equals("user")
-                ? "🎉 Tabriklaymiz! Siz blokdan olindingiz. Botdan foydalanish uchun /start tugmasini bosing."
-                : "❌ Kechirasiz, siz admin tomonidan bloklandingiz. Botdan foydalana olmaysiz.";
+        String userNotification = targetUser.getRole().equals("user") ? "🎉 Tabriklaymiz! Siz blokdan olindingiz. Botdan foydalanish uchun /start tugmasini bosing." : "❌ Kechirasiz, siz admin tomonidan bloklandingiz. Botdan foydalana olmaysiz.";
 
-        ReplyKeyboardMarkup keyboard = targetUser.getRole().equals("user")
-                ? kyb.setKeyboards(new String[]{"/start"}, 1)
-                : null;
+        ReplyKeyboardMarkup keyboard = targetUser.getRole().equals("user") ? kyb.setKeyboards(new String[]{"/start"}, 1) : null;
 
         if (targetUser.getRole().equals("block")) {
             bot.sendMessage(botId, targetUser.getChatId(), userNotification, true);
@@ -355,10 +356,7 @@ public class AdminOnlineMagazineFunction {
                             • Qidiruv so'rovi to'g'ri yozilganligi
                             • Boshqa kalit so'zlar bilan sinab ko'ring""".formatted(text);
 
-                    bot.sendMessage(
-                            botInfo.getId(),
-                            user.getChatId(),
-                            notFoundMessage, kyb.backBtn);
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), notFoundMessage, kyb.backBtn);
                 } else {
                     // Agar foydalanuvchilar topilsa
                     String resultsHeader = """
@@ -368,28 +366,14 @@ public class AdminOnlineMagazineFunction {
                             Topildi: %d ta foydalanuvchi""".formatted(text, foundUsers.size());
 
                     // Natijalarni yuborish
-                    bot.sendMessage(
-                            botInfo.getId(),
-                            user.getChatId(),
-                            resultsHeader,
-                            kyb.backBtn
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), resultsHeader, kyb.backBtn
 
                     );
 
                     // Foydalanuvchilar ro'yxatini yuborish
-                    String usersList = adminOnlineMagazineAboutUsers(
-                            checkSearch.getData(),
-                            botInfo.getBotUsername(),
-                            user.getPage(),
-                            bot.size
-                    );
+                    String usersList = adminOnlineMagazineAboutUsers(checkSearch.getData(), botInfo.getBotUsername(), user.getPage(), bot.size);
 
-                    bot.sendMessage(
-                            botInfo.getId(),
-                            user.getChatId(),
-                            usersList,
-                            kyb.getUsers(foundUsers)
-                    );
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), usersList, kyb.getUsers(foundUsers));
                 }
             } else {
                 bot.sendMessage(botInfo.getId(), user.getChatId(), "Bunday nomli foydalanuvchilar topilmadi, boshqatdan harakat qilib ko'ring", kyb.backBtn);
@@ -420,12 +404,7 @@ public class AdminOnlineMagazineFunction {
                         - ID raqam to'g'ri kiritilganligi
                         - Boshqa ID bilan qayta urinib ko'ring""".formatted(userId);
 
-                bot.sendMessage(
-                        botId,
-                        user.getChatId(),
-                        notFoundMessage,
-                        kyb.backBtn
-                );
+                bot.sendMessage(botId, user.getChatId(), notFoundMessage, kyb.backBtn);
                 return;
             }
 
@@ -440,16 +419,8 @@ public class AdminOnlineMagazineFunction {
                     
                     %s
                     
-                    Qo'shimcha amallar uchun quyidagi tugmalardan foydalaning:""".formatted(
-                    text,
-                    userResponse.isSuccess() ? "✅ Foydalanuvchi muvaffaqiyatli topildi" : "❌ Foydalanuvchi topilmadi"
-            ), kyb.backBtn);
-            bot.sendMessage(
-                    botId,
-                    user.getChatId(),
-                    userInfo,
-                    kyb.updateUser(isBlock, false)
-            );
+                    Qo'shimcha amallar uchun quyidagi tugmalardan foydalaning:""".formatted(text, userResponse.isSuccess() ? "✅ Foydalanuvchi muvaffaqiyatli topildi" : "❌ Foydalanuvchi topilmadi"), kyb.backBtn);
+            bot.sendMessage(botId, user.getChatId(), userInfo, kyb.updateUser(isBlock, false));
             user.setBotUserId(userId);
             botUserService.save(user);
         } catch (NumberFormatException e) {
@@ -462,12 +433,7 @@ public class AdminOnlineMagazineFunction {
                     
                     Qayta urinib ko'ring yoki orqaga qayting""";
 
-            bot.sendMessage(
-                    botId,
-                    user.getChatId(),
-                    errorMessage,
-                    kyb.backBtn
-            );
+            bot.sendMessage(botId, user.getChatId(), errorMessage, kyb.backBtn);
             log.error("Invalid user ID format entered: {}", text, e);
         } catch (Exception e) {
             String errorMessage = """
@@ -477,12 +443,7 @@ public class AdminOnlineMagazineFunction {
                     Iltimos, keyinroq qayta urinib ko'ring.
                     """;
 
-            bot.sendMessage(
-                    botId,
-                    user.getChatId(),
-                    errorMessage,
-                    kyb.backBtn
-            );
+            bot.sendMessage(botId, user.getChatId(), errorMessage, kyb.backBtn);
             log.error("Error finding user by ID: {}", text, e);
         }
     }
@@ -494,8 +455,7 @@ public class AdminOnlineMagazineFunction {
 
     public void categoryMenu(BotInfo botInfo, BotUser user, String text) {
         Long botId = botInfo.getId();
-        if (text.equals(backButton))
-            start(botInfo, user);
+        if (text.equals(backButton)) start(botInfo, user);
         else if (text.equals(addCategory)) {
             bot.sendMessage(botId, user.getChatId(), """
                     <b>📥 Kategoriya nomini kiriting</b>
@@ -536,9 +496,7 @@ public class AdminOnlineMagazineFunction {
             category.setNameUz(text);
             ResponseDto<Void> save = categoryService.save(botId, category, "uz");
             if (save.isSuccess()) {
-                bot.sendMessage(botId, user.getChatId(), "<b>✅ O'zbekcha nom muvaffaqiyatli saqlandi!</b>\n"
-                        + "Endi kategoriyaning <i>ruscha</i> nomini kiriting:\n\n"
-                        + "Masalan: <code>Лаваш</code> yoki <code>Ход-дог</code>", true);
+                bot.sendMessage(botId, user.getChatId(), "<b>✅ O'zbekcha nom muvaffaqiyatli saqlandi!</b>\n" + "Endi kategoriyaning <i>ruscha</i> nomini kiriting:\n\n" + "Masalan: <code>Лаваш</code> yoki <code>Ход-дог</code>", true);
                 eventCode(user, "add new category name ru");
             } else {
                 bot.sendMessage(botId, user.getChatId(), """
@@ -610,15 +568,12 @@ public class AdminOnlineMagazineFunction {
                 bot.alertMessage(botInfo.getId(), callbackQuery, "⚠️ \"%s\" kategoriyasida mahsulotlar mavjud emas.".formatted(category.getNameUz()));
             }
             bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
-            if (products.isEmpty())
-                bot.sendMessage(botInfo.getId(), user.getChatId(), ("""
-                                ⚠️ "%s" kategoriyasida hozircha mahsulotlar mavjud emas.
-                                
-                                ➕ Yangi mahsulot qo‘shish uchun pastdagi tugmani bosing.""").formatted(category.getNameUz())
-                        , kyb.setProducts(products, "uz"));
+            if (products.isEmpty()) bot.sendMessage(botInfo.getId(), user.getChatId(), ("""
+                    ⚠️ "%s" kategoriyasida hozircha mahsulotlar mavjud emas.
+                    
+                    ➕ Yangi mahsulot qo‘shish uchun pastdagi tugmani bosing.""").formatted(category.getNameUz()), kyb.setProducts(products, "uz"));
             else
-                bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(category.getNameUz())
-                        , kyb.setProducts(products, "uz"));
+                bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(category.getNameUz()), kyb.setProducts(products, "uz"));
 
             eventCode(user, "product menu");
         } else {
@@ -662,23 +617,19 @@ public class AdminOnlineMagazineFunction {
         String responseMessage;
         if (user.getEventCode().equals("edit_uz_name")) {
             if (text.equalsIgnoreCase(category.getNameUz())) {
-                responseMessage = "⚠️ O'zbekcha nom o'zgartirilmadi\n" +
-                        "Sababi: Yangi nom avvalgisi bilan bir xil";
+                responseMessage = "⚠️ O'zbekcha nom o'zgartirilmadi\n" + "Sababi: Yangi nom avvalgisi bilan bir xil";
             } else {
                 category.setNameUz(text.trim());
                 categoryService.save(category);
-                responseMessage = "✅ O'zbekcha nom muvaffaqiyatli yangilandi!\n" +
-                        "Yangi nom: " + text;
+                responseMessage = "✅ O'zbekcha nom muvaffaqiyatli yangilandi!\n" + "Yangi nom: " + text;
             }
         } else if (user.getEventCode().equals("edit_ru_name")) {
             if (text.equalsIgnoreCase(category.getNameRu())) {
-                responseMessage = "⚠️ Ruscha nom o'zgartirilmadi\n" +
-                        "Sababi: Yangi nom avvalgisi bilan bir xil";
+                responseMessage = "⚠️ Ruscha nom o'zgartirilmadi\n" + "Sababi: Yangi nom avvalgisi bilan bir xil";
             } else {
                 category.setNameRu(text.trim());
                 categoryService.save(category);
-                responseMessage = "✅ Ruscha nom muvaffaqiyatli yangilandi!\n" +
-                        "Новое название: " + text;
+                responseMessage = "✅ Ruscha nom muvaffaqiyatli yangilandi!\n" + "Новое название: " + text;
             }
         } else {
             return; // Noto'g'ri event code
@@ -693,12 +644,7 @@ public class AdminOnlineMagazineFunction {
         if (text.equals(backButton)) {
             categoryMenu(botInfo, user, category.getNameUz());
         } else if (text.equals(addProduct)) {
-            bot.sendMessage(botInfo.getId(), user.getChatId(),
-                    ("🆕 Yangi mahsulot qo‘shish\n" +
-                            "\n"
-                            + "📂 \"%s\" kategoriyasiga mahsulot qo‘shmoqchisiz.\n"
-                            + "✍ Iltimos, mahsulotning o‘zbekcha nomini kiriting:").formatted(category.getNameUz()),
-                    kyb.backBtn);
+            bot.sendMessage(botInfo.getId(), user.getChatId(), ("🆕 Yangi mahsulot qo‘shish\n" + "\n" + "📂 \"%s\" kategoriyasiga mahsulot qo‘shmoqchisiz.\n" + "✍ Iltimos, mahsulotning o‘zbekcha nomini kiriting:").formatted(category.getNameUz()), kyb.backBtn);
             eventCode(user, "get new product name uz");
         } else {
             ResponseDto<Product> checkProduct = productService.findByNameUz(text, user.getCategoryId());
@@ -707,18 +653,12 @@ public class AdminOnlineMagazineFunction {
                 List<ProductVariant> list = productVariantService.findAllByProductId(product.getId()).getData();
                 user.setProductId(product.getId());
                 bot.sendMessage(botInfo.getId(), user.getChatId(), text, kyb.backBtn);
-                bot.sendPhoto(
-                        botInfo.getId(), user.getChatId(), list.get(0).getImg(), kyb.getProductVariantsAndEditProductBtn(
-                                list, list.get(0).getId()
-                        ), false, aboutCategoryWithPhoto(true, product, list.get(0).getPrice(), list.get(0), "uz")
-                );
+                bot.sendPhoto(botInfo.getId(), user.getChatId(), list.get(0).getImg(), kyb.getProductVariantsAndEditProductBtn(list, list.get(0).getId()), false, aboutCategoryWithPhoto(true, product, list.get(0).getPrice(), list.get(0), "uz"));
                 user.setProductVariantId(list.get(0).getId());
                 user.setEventCode("crud product");
                 botUserService.save(user);
             } else {
-                wrongBtn(botInfo.getId(), user.getChatId(), kyb.setProducts(
-                        productService.findAllByCategoryId(category.getId()).getData(), "uz"
-                ));
+                wrongBtn(botInfo.getId(), user.getChatId(), kyb.setProducts(productService.findAllByCategoryId(category.getId()).getData(), "uz"));
             }
         }
     }
@@ -728,8 +668,7 @@ public class AdminOnlineMagazineFunction {
         List<Product> products = productService.findAllByCategoryId(category.getId()).getData();
         if (text != null) {
             if (text.equals(backButton)) {
-                bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(category.getNameUz())
-                        , kyb.setProducts(products, "uz"));
+                bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(category.getNameUz()), kyb.setProducts(products, "uz"));
                 eventCode(user, "product menu");
                 return;
             }
@@ -918,8 +857,7 @@ public class AdminOnlineMagazineFunction {
             products = productService.findAllByCategoryId(user.getCategoryId()).getData();
             bot.sendMessage(botInfo.getId(), user.getChatId(), "✅ Muvaffaqiyatli saqlandi");
 
-            bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(categoryService.findById(user.getCategoryId()).getData().getNameUz())
-                    , kyb.setProducts(products, "uz"));
+            bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(categoryService.findById(user.getCategoryId()).getData().getNameUz()), kyb.setProducts(products, "uz"));
             eventCode(user, "product menu");
         } else if (text.equals("❌ Yo'q")) {
             ProductVariant variant = productVariantService.draftProductVariant(product.getId()).getData();
@@ -935,8 +873,7 @@ public class AdminOnlineMagazineFunction {
             variant.setActive(false);
             productVariantService.save(variant);
             bot.sendMessage(botInfo.getId(), user.getChatId(), "🚫 Operatsiya bekor qilindi");
-            bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(categoryService.findById(user.getCategoryId()).getData().getNameUz())
-                    , kyb.setProducts(products, "uz"));
+            bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(categoryService.findById(user.getCategoryId()).getData().getNameUz()), kyb.setProducts(products, "uz"));
             eventCode(user, "product menu");
         } else return;
     }
@@ -944,8 +881,7 @@ public class AdminOnlineMagazineFunction {
     public void crudProduct(BotInfo botInfo, BotUser user, String text) {
         List<Product> products = productService.findAllByCategoryId(user.getCategoryId()).getData();
         if (text.equals(backButton)) {
-            bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(categoryService.findById(user.getCategoryId()).getData().getNameUz())
-                    , kyb.setProducts(products, "uz"));
+            bot.sendMessage(botInfo.getId(), user.getChatId(), "🛍 \"%s\" kategoriyasidagi mavjud mahsulotlar:".formatted(categoryService.findById(user.getCategoryId()).getData().getNameUz()), kyb.setProducts(products, "uz"));
             eventCode(user, "product menu");
             return;
         }
@@ -953,11 +889,7 @@ public class AdminOnlineMagazineFunction {
         Product product = productService.findById(user.getProductId()).getData();
         List<ProductVariant> list = productVariantService.findAllByProductId(product.getId()).getData();
         user.setProductId(product.getId());
-        bot.sendPhoto(
-                botInfo.getId(), user.getChatId(), list.get(0).getImg(), kyb.getProductVariantsAndEditProductBtn(
-                        list, list.get(0).getId()
-                ), false, aboutCategoryWithPhoto(true, product, list.get(0).getPrice(), list.get(0), "uz")
-        );
+        bot.sendPhoto(botInfo.getId(), user.getChatId(), list.get(0).getImg(), kyb.getProductVariantsAndEditProductBtn(list, list.get(0).getId()), false, aboutCategoryWithPhoto(true, product, list.get(0).getPrice(), list.get(0), "uz"));
         user.setProductVariantId(list.get(0).getId());
         botUserService.save(user);
     }
@@ -989,9 +921,7 @@ public class AdminOnlineMagazineFunction {
                 if (data.equals("delete_cancel")) {
                     bot.alertMessage(botInfo.getId(), callbackQuery, "\uD83D\uDEAB Operatsiya foydalanuvchi tomonidan bekor qilindi");
                 }
-                crudProduct(
-                        botInfo, user, String.valueOf(user.getProductVariantId()), callbackQuery, messageId, true
-                );
+                crudProduct(botInfo, user, String.valueOf(user.getProductVariantId()), callbackQuery, messageId, true);
             }
 
             case "delete_confirm" -> {
@@ -1033,11 +963,10 @@ public class AdminOnlineMagazineFunction {
             case "delete product variant" -> {
                 List<ProductVariant> variants = productVariantService.findAllByProductId(user.getProductId()).getData();
                 if (variants.size() == 1) {
-                    bot.alertMessage(botInfo.getId(), callbackQuery,
-                            """
-                                    ⚠️ Ushbu mahsulotni o‘chirish mumkin emas, chunki faqat bitta turi mavjud.
-                                    
-                                    Agar ushbu turini o‘chirmoqchi bo‘lsangiz, avval yangi tur qo‘shing, so‘ng bu turini o‘chirishingiz mumkin.""");
+                    bot.alertMessage(botInfo.getId(), callbackQuery, """
+                            ⚠️ Ushbu mahsulotni o‘chirish mumkin emas, chunki faqat bitta turi mavjud.
+                            
+                            Agar ushbu turini o‘chirmoqchi bo‘lsangiz, avval yangi tur qo‘shing, so‘ng bu turini o‘chirishingiz mumkin.""");
                     return;
                 }
                 ProductVariant productVariant = productVariantService.findById(user.getProductVariantId()).getData();
@@ -1145,6 +1074,7 @@ public class AdminOnlineMagazineFunction {
                 s = "Muvaffaqiyatli saqlandi, ruscha nomini kiriting";
                 e = "add product variant to product get name ru";
                 variant.setNameUz(text);
+                productVariantService.save(variant);
             }
             case "add product variant to product get name ru" -> {
                 s = "Muvaffaqiyatli saqlandi, endi narxini kiriting";
@@ -1169,7 +1099,8 @@ public class AdminOnlineMagazineFunction {
                     variants = productVariantService.findAllByProductId(user.getProductId()).getData();
                     user.setProductVariantId(variant.getId());
                     botUserService.save(user);
-                    bot.sendPhoto(botInfo.getId(), user.getChatId(), productVariant.getImg(), kyb.getProductVariantsAndEditProductBtn(variants, user.getProductVariantId()), false, "✅ Muvaffaqiyatli qo'shildi" + aboutCategoryWithPhoto(true, product, productVariant.getPrice(), productVariant, "uz"));
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), text , kyb.backBtn);
+                    bot.sendPhoto(botInfo.getId(), user.getChatId(), variant.getImg(), kyb.getProductVariantsAndEditProductBtn(variants, user.getProductVariantId()), false, "✅ Muvaffaqiyatli qo'shildi" + aboutCategoryWithPhoto(true, product, variant.getPrice(), variant, "uz"));
                     eventCode(user, "crud product");
                 } else if (text.equals("❌ Yo'q")) {
                     ProductVariant a = productVariantService.findById(user.getProductVariantId()).getData();
@@ -1179,13 +1110,11 @@ public class AdminOnlineMagazineFunction {
                 return;
             }
             case "add product variant to product get img" -> {
-                s = "Ushbu turni haqiqatdan hamqo'shmoqchimisiz\n\n" + (
-                        """
-                                Tur nomi(uz) %s
-                                Tur nomi(ru) %s
-                                Tur narxi:  %s
-                                """.formatted(productVariant.getNameUz(), productVariant.getNameRu(), formatPrice(productVariant.getPrice()))
-                );
+                s = "Ushbu turni haqiqatdan hamqo'shmoqchimisiz\n\n" + ("""
+                        Tur nomi(uz) %s
+                        Tur nomi(ru) %s
+                        Tur narxi:  %s
+                        """.formatted(variant.getNameUz(), variant.getNameRu(), formatPrice(variant.getPrice())));
                 e = "is add product variant to product";
                 eventCode(user, e);
                 variant.setImg(text);
@@ -1226,7 +1155,7 @@ public class AdminOnlineMagazineFunction {
         if (text.equals(backButton)) menu(botInfo.getId(), user, adminOnlineMagazineMenu[4], botInfo, bot.adminChatId);
         else {
             BotUser botUser = botUserService.findByUserChatId(user.getChatIdHelp(), botInfo.getId()).getData();
-            if (botUser.getLang() == null)botUser.setLang("uz");
+            if (botUser.getLang() == null) botUser.setLang("uz");
             ResponseDto<Void> sendMsg = bot.sendMessage(botInfo.getId(), user.getChatIdHelp(), text, kyb.replyBtn(user.getChatId(), botUser.getLang()));
             if (sendMsg.isSuccess()) {
                 bot.sendMessage(botInfo.getId(), user.getChatId(), "Xabaringiz yetkazildi");
@@ -1245,9 +1174,456 @@ public class AdminOnlineMagazineFunction {
         }
         Long chatIdHelp = user.getChatIdHelp();
         BotUser botUser = botUserService.findByUserChatId(chatIdHelp, botInfo.getId()).getData();
-        if (botUser.getLang() == null)botUser.setLang("uz");
+        if (botUser.getLang() == null) botUser.setLang("uz");
         bot.sendMessage(botInfo.getId(), chatIdHelp, text, kyb.replyBtn(user.getChatId(), botUser.getLang()));
         bot.sendMessage(botInfo.getId(), user.getChatId(), "Xabaringiz muvaffaqiyatli yetkazildi", kyb.backBtn("uz"));
         start(botInfo, user);
+    }
+
+    public void branchMenu(BotInfo botInfo, BotUser user, String text, Long botId) {
+        List<Branch> branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botId);
+        if (text.equals(backButton)) start(botInfo, user);
+        else {
+            if (text.equals(adminOnlineMagazineBranchMenu[0])) {
+                if (branches.isEmpty()) {
+                    bot.sendMessage(botId, user.getChatId(), "⚠️ <b>Sizda hech qanday filial mavjud emas!</b>\n\n" + "Filial qo‘shish uchun <b>\"%s\"</b> tugmasini bosing. ✅".formatted(adminOnlineMagazineBranchMenu[1]), kyb.branchMenu);
+
+                    return;
+                }
+                bot.sendMessage(botId, user.getChatId(), "🏢 <b>Sizdagi mavjud filiallar ro‘yxati:</b>\n\n" + "Quyidagi ro‘yxatdan kerakli filialni tanlang.", kyb.branches(branches));
+                eventCode(user, "get branches lists");
+            } else if (text.equals(adminOnlineMagazineBranchMenu[1])) {
+                bot.sendMessage(botId, user.getChatId(), """
+                        🏢 <b>Yangi filial qo‘shish</b>
+                        
+                        Iltimos, yangi filialning nomini kiriting ⌨️""", kyb.backBtn);
+                eventCode(user, "get new branch name");
+            }
+        }
+    }
+
+    public void addBranch(BotInfo botInfo, BotUser user, String text, String eventCode) {
+        if (text.equals(backButton)) {
+            menu(botInfo.getId(), user, adminOnlineMagazineMenu[5], botInfo, bot.adminChatId);
+            return;
+        }
+        Branch branch = branchRepository.draftBranch();
+        if (branch == null) {
+            branch = new Branch();
+            branch.setActive(false);
+            branch.setStatus(DRAFT);
+            branch.setBotId(botInfo.getId());
+            branchRepository.save(branch);
+        }
+        if (eventCode.equals("get new branch name")) {
+            Branch checkbranch = branchRepository.findByNameAndActiveIsTrue(text);
+            if (checkbranch != null) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), """
+                        ⚠️ <b>Diqqat!</b>
+                        
+                        ❌ Bunday nomli filial allaqachon mavjud.
+                        🔄 Iltimos, boshqa nom kiriting.""", kyb.backBtn);
+                return;
+            }
+            branch.setName(text);
+            branchRepository.save(branch);
+            bot.sendMessage(botInfo.getId(), user.getChatId(), """
+                    🏢 <b>%s</b> filiali uchun tavsif kiriting.
+                    
+                    ℹ️ Tavsif filial haqida qisqacha ma'lumot bo'lishi kerak.""".formatted(text));
+            eventCode(user, "get new branch description");
+
+        } else if (eventCode.equals("get new branch description")) {
+            branch.setDescription(text);
+            branchRepository.save(branch);
+            bot.sendMessage(botInfo.getId(), user.getChatId(), """
+                    ✅ <b>Muvaffaqiyatli saqlandi!</b>
+                    
+                    📍 Endi ushbu filial uchun mo'ljal kiriting.""");
+            eventCode(user, "get new branch destination");
+        } else if (eventCode.equals("get new branch destination")) {
+            branch.setDestination(text);
+            branchRepository.save(branch);
+            bot.sendMessage(botInfo.getId(), user.getChatId(), """
+                    ✅ <b>Muvaffaqiyatli saqlandi!</b>
+                    
+                    ⏳ Endi ushbu filialning <b>ish vaqtini</b> kiriting.
+                    Masalan: <pre>09:00 - 18:00</pre>""");
+            eventCode(user, "get new branch working hours");
+        } else if (eventCode.equals("get new branch working hours")) {
+            branch.setWorkingHours(text);
+            branchRepository.save(branch);
+            bot.sendMessage(botInfo.getId(), user.getChatId(), """
+                    ✅ <b>Muvaffaqiyatli saqlandi!</b>
+                    
+                    📞 Endi ushbu filialning <b>telefon raqamini</b> kiriting.
+                    Masalan: <pre>+998901234567</pre>""");
+            eventCode(user, "get new branch phone");
+        } else if (eventCode.equals("get new branch phone")) {
+            branch.setPhone(text);
+            branchRepository.save(branch);
+            String caption = """
+                    ✅ <b>Muvaffaqiyatli saqlandi!</b>
+                    
+                    📍 Endi ushbu filialning <b>joylashuvini (lokatsiya)</b> yuboring.
+                    
+                    🔹 <i>Lokatsiyani yuborish uchun Telegram'ning "📎" tugmasidan foydalaning.</i>""";
+            bot.sendPhoto(botInfo.getId(), user.getChatId(), true, caption, "src/images/for-location.png");
+            eventCode(user, "get new branch location");
+        } else if (eventCode.equals("get new branch location")) {
+            String caption = """
+                    ✅ <b>Muvaffaqiyatli saqlandi!</b>
+                    
+                    📍 Endi ushbu filialning <b>joylashuvini (lokatsiya)</b> yuboring.
+                    
+                    🔹 <i>Lokatsiyani yuborish uchun Telegram'ning "📎" tugmasidan foydalaning.</i>""";
+            bot.sendPhoto(botInfo.getId(), user.getChatId(), true, caption, "src/images/for-location.png");
+            eventCode(user, " ");
+        } else if (eventCode.equals("is add branch")) {
+            if (text.equals("✅ Ha")) {
+                branch.setActive(true);
+                branch.setStatus(OPEN);
+                branchRepository.save(branch);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), "✅ <b>Muvaffaqiyatli saqlandi!</b>");
+
+                menu(botInfo.getId(), user, adminOnlineMagazineMenu[5], botInfo, bot.adminChatId);
+            } else if (text.equals("❌ Yo'q")) {
+                branch.setActive(false);
+                branch.setStatus(OPEN);
+                branchRepository.save(branch);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), "❌ <b>Operatsiya bekor qilindi!</b>");
+                menu(botInfo.getId(), user, adminOnlineMagazineMenu[5], botInfo, bot.adminChatId);
+            }
+        } else if (eventCode.equals("add new branch has image")) {
+            if (text.equals("✅ Ha")) {
+                branch.setHasImage(true);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), "📸 <b>Endi filial rasmini yuboring</b>", true);
+                branchRepository.save(branch);
+                eventCode(user, "get new branch image");
+            } else if (text.equals("❌ Yo'q")) {
+                branch.setHasImage(false);
+                branchRepository.save(branch);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), aboutBranch(branch) + "\n\n<b>Ushbu ma'lumotlar to'g'rimi?</b>", kyb.isSuccess("uz"));
+                eventCode(user, "is add branch");
+            } else return;
+        }
+    }
+
+    public void addBranch(BotInfo botInfo, BotUser user, Location location) {
+        Branch branch = branchRepository.draftBranch();
+        Json json = new Json().setAddress(location.getLatitude(), location.getLongitude());
+        String address = json.getAddress();
+        Double latitude = location.getLatitude(), longitude = location.getLongitude();
+        branch.setAddress(address);
+        branch.setLatitude(latitude);
+        branch.setLongitude(longitude);
+        branchRepository.save(branch);
+        bot.sendMessage(botInfo.getId(), user.getChatId(), """
+                📸 Ushbu filialning rasmi bor bormi ?
+                
+                
+                """, kyb.isSuccess("uz"));
+
+        eventCode(user, "add new branch has image");
+    }
+
+    private String aboutBranch(Branch branch) {
+        return """
+                🏢 <b>Filial haqida ma'lumot:</b>
+                
+                🔹 <b>Nomi:</b> %s
+                🔹 <b>Tavsifi:</b> %s
+                🔹 <b>Mo'ljali:</b> %s
+                🔹 <b>Ish vaqti:</b> %s
+                🔹 <b>Telefon raqami:</b> %s
+                🔹 <b>Manzil:</b> %s
+                """.formatted(branch.getName(), branch.getDescription(), branch.getDestination(), branch.getWorkingHours(), branch.getPhone(), branch.getAddress());
+    }
+
+    public void addBranch(BotInfo botInfo, BotUser user, List<PhotoSize> photo) {
+        String img = photo.get(photo.size() - 1).getFileId();
+        Branch branch = branchRepository.draftBranch();
+        branch.setImageUrl(img);
+        branchRepository.save(branch);
+        bot.sendPhoto(botInfo.getId(), user.getChatId(), img, kyb.isSuccess("uz"), false, aboutBranch(branch) + "\n\n<b>Ushbu ma'lumotlar to'g'rimi?</b>");
+        eventCode(user, "is add branch");
+    }
+
+    public void getBranchesLists(BotInfo botInfo, BotUser user, String text) {
+        if (text.equals(backButton)) {
+            menu(botInfo.getId(), user, adminOnlineMagazineMenu[5], botInfo, bot.adminChatId);
+            return;
+        }
+        Branch branch = branchRepository.findByNameAndActiveIsTrue(text);
+        if (branch == null) {
+            wrongBtn(botInfo.getId(), user.getChatId(), kyb.branches(branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId())));
+            return;
+        }
+        Boolean hasImage = branch.getHasImage();
+        user.setBranchId(branch.getId());
+        if (hasImage) {
+            bot.sendPhoto(botInfo.getId(), user.getChatId(), branch.getImageUrl(), kyb.crudBranch(true), false, aboutBranch(branch));
+        } else {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), aboutBranch(branch), kyb.crudBranch(false));
+        }
+        botUserService.save(user);
+    }
+
+    public void getBranchesLists(BotInfo botInfo, BotUser user, String data, CallbackQuery callbackQuery, Integer messageId) {
+        Branch branch;
+        Optional<Branch> bOp = branchRepository.findById(user.getBranchId());
+        if (bOp.isEmpty()) return;
+        branch = bOp.get();
+        Boolean hasImage = branch.getHasImage();
+        switch (data) {
+            case "delete" -> {
+                String text = aboutBranch(branch) + "\n\n\n" + "\uD83D\uDD25 Haqiqatdan ham ushbu filialni o'chirmoqchimisiz ?";
+                if (hasImage) {
+                    bot.editCaption(botInfo.getId(), user.getChatId(), messageId, text, kyb.isSuccessBtn("uz"));
+                } else {
+                    bot.editMessageText(botInfo.getId(), user.getChatId(), messageId, text, kyb.isSuccessBtn("uz"));
+                }
+            }
+            case "change_address", "change_phone", "change_description", "change_destination", "change_image",
+                 "change_working_hours", "change_name" -> {
+                eventCode(user, data);
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                String res;
+                switch (data) {
+                    case "change_address" ->
+                            res = "📍 <b>Manzilni o'zgartirish uchun yangi joylashuv (lokatsiyas)ini yuboring:</b>\n\n" + "⛔️ Avvalgi manzil: <code>" + branch.getAddress() + "</code>";
+                    case "change_phone" ->
+                            res = "📱 <b>Telefon raqamingizni o'zgartirish uchun yangi raqamni yuboring:</b>\n\n" + "☎️ Avvalgi telefon raqami: <code>" + branch.getPhone() + "</code>";
+                    case "change_description" ->
+                            res = "📝 <b>Filial tavsifini o'zgartirish uchun yangi tavsifni yuboring:</b>\n\n" + "🗒 Avvalgi tavsif: <code>" + branch.getDescription() + "</code>";
+                    case "change_destination" ->
+                            res = "🎯 <b>Filial mo'ljalini o'zgartirish uchun yangi mo'ljalni yuboring:</b>\n\n" + "🎯 Avvalgi mo'ljal: <code>" + branch.getDestination() + "</code>";
+                    case "change_image" -> res = "🖼 <b>Filial rasmi o'zgartirilishi uchun yangi rasmni yuboring:</b>";
+                    case "change_working_hours" ->
+                            res = "⏳ <b>Filial ish vaqtini o'zgartirish uchun yangi ish vaqtini yuboring:</b>\n\n" + "🕒 Avvalgi ish vaqti: <code>" + branch.getWorkingHours() + "</code>";
+                    case "change_name" ->
+                            res = "🏷 <b>Filial nomini o'zgartirish uchun yangi nomni yuboring:</b>\n\n" + "📝 Avvalgi filial nomi: <code>" + branch.getName() + "</code>";
+                    default -> {
+                        return;
+                    }
+                }
+                bot.sendMessage(botInfo.getId(), user.getChatId(), res, kyb.backBtn);
+            }
+            case "remove_img" -> {
+                branch.setHasImage(false);
+                branchRepository.save(branch);
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), aboutBranch(branch), kyb.crudBranch(false));
+            }
+            case "add_img" -> {
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                bot.sendMessage(botInfo.getId(), user.getChatId(),
+                        """
+                                📷 <b>Rasm yuboring</b>
+                                
+                                Filial rasmini belgilash uchun istalgan rasmni jo‘nating yoki <b>ortga qaytish</b> tugmasini bosing.
+                                """, kyb.backBtn);
+                eventCode(user, data);
+
+            }
+            case "no delete" -> {
+                bot.alertMessage(botInfo.getId(), callbackQuery, "❌ Operatsiya bekor qilindi!\n\n🚫 Ushbu filial o'chirilmadi.");
+                String text = aboutBranch(branch);
+                if (hasImage) {
+                    bot.editCaption(botInfo.getId(), user.getChatId(), messageId, text, kyb.crudBranch(true));
+                } else {
+                    bot.editMessageText(botInfo.getId(), user.getChatId(), messageId, text, kyb.crudBranch(false));
+                }
+            }
+            case "yes delete" -> {
+                branch.setActive(false);
+                branchRepository.save(branch);
+                bot.alertMessage(botInfo.getId(), callbackQuery, "✅ Muvaffaqiyatli o'chirildi");
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                boolean isHas = !branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId()).isEmpty();
+                if (isHas) branchMenu(botInfo, user, adminOnlineMagazineBranchMenu[0], botInfo.getId());
+                else menu(botInfo.getId(), user, adminOnlineMagazineMenu[5], botInfo, bot.adminChatId);
+            }
+        }
+    }
+
+    public void editBranch(BotInfo botInfo, BotUser user, String text, Location location, Integer messageId) {
+        Optional<Branch> bOp = branchRepository.findById(user.getBranchId());
+        if (bOp.isEmpty()) {
+            return;
+        }
+        Branch branch = bOp.get();
+        List<Branch> branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId());
+        try {
+            if (user.getEventCode().equals("change_address")) {
+                if (text != null) {
+                    if (text.equals(backButton)) {
+                        eventCode(user, "get branches lists");
+                        bot.sendMessage(botInfo.getId(), user.getChatId(), text, kyb.branches(branches));
+                        getBranchesLists(botInfo, user, branch.getName());
+                        return;
+                    }
+                }
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                return;
+            } else {
+                assert text != null;
+                if (text.equals(backButton)) {
+                    eventCode(user, "get branches lists");
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), text, kyb.branches(branches));
+                    getBranchesLists(botInfo, user, branch.getName());
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
+        String res;
+        switch (user.getEventCode()) {
+            case "change_address" -> {
+
+                String oldAddress = branch.getAddress();
+                Json json = new Json().setAddress(location.getLatitude(), location.getLongitude());
+                branch.setAddress(json.getAddress());
+                branch.setLatitude(location.getLatitude());
+                branch.setLongitude(location.getLongitude());
+                branchRepository.save(branch);
+                res = """
+                        ✅ <b>Muvaffaqiyatli o'zgartirildi!</b>
+                        
+                        📍 <b>Eski manzil:</b> <code>%s</code>
+                        📍 <b>Yangi manzil:</b> <code>%s</code>
+                        """.formatted(oldAddress, branch.getAddress());
+
+            }
+            case "change_phone" -> {
+                String oldPhone = branch.getPhone();
+                branch.setPhone(text);
+                branchRepository.save(branch);
+                res = """
+                        ✅ <b>Muvaffaqiyatli o'zgartirildi!</b>
+                        
+                        📍 <b>Eski telefon raqam:</b> <code>%s</code>
+                        📍 <b>Yangi telefon raqam:</b> <code>%s</code>
+                        """.formatted(oldPhone, branch.getAddress());
+
+            }
+            case "change_description" -> {
+                String oldDesc = branch.getDescription();
+                branch.setDescription(text);
+                branchRepository.save(branch);
+                res = """
+                        ✅ <b>Muvaffaqiyatli o'zgartirildi!</b>
+                        
+                        📍 <b>Eski tavsif:</b> <code>%s</code>
+                        📍 <b>Yangi tavsif:</b> <code>%s</code>
+                        """.formatted(oldDesc, branch.getDescription());
+            }
+            case "change_destination" -> {
+                String oldDest = branch.getDestination();
+                branch.setDestination(text);
+                branchRepository.save(branch);
+                res = """
+                        ✅ <b>Muvaffaqiyatli o'zgartirildi!</b>
+                        
+                        📍 <b>Eski mo'ljal:</b> <code>%s</code>
+                        📍 <b>Yangi mo'ljal:</b> <code>%s</code>
+                        """.formatted(oldDest, branch.getDestination());
+            }
+            case "change_image" -> {
+                String oldDest = branch.getImageUrl();
+                branch.setImageUrl(text);
+                branchRepository.save(branch);
+                res = """
+                        ✅ <b>Muvaffaqiyatli o'zgartirildi!</b>
+                        """;
+            }
+            case "change_working_hours" -> {
+                String oldTime = branch.getWorkingHours();
+                branch.setWorkingHours(text);
+                branchRepository.save(branch);
+                res = """
+                        ✅ <b>Muvaffaqiyatli o'zgartirildi!</b>
+                        
+                        📍 <b>Eski ish vaqti:</b> <code>%s</code>
+                        📍 <b>Yangi ish vaqti:</b> <code>%s</code>
+                        """.formatted(oldTime, branch.getWorkingHours());
+            }
+            case "change_name" -> {
+                String oldName = branch.getName();
+                Branch editBranch = branchRepository.findByNameAndActiveIsTrue(text);
+                if (editBranch != null) {
+                    bot.sendMessage(botInfo.getId(), user.getChatId(),
+                            """
+                            ❌ <b>Operatsiya bekor qilindi!</b>
+                            
+                            Sababi: bunday nomli boshqa filial allaqachon mavjud.
+                            Iltimos, ro‘yxatdan birini tanlang yoki yangi filial qo'shing.
+                            """, kyb.branches(branches));
+
+                    eventCode(user, "get branches lists");
+                    getBranchesLists(botInfo, user, branch.getName());
+                    return;
+                }
+                if (oldName.equals(text)) {
+                    res = """
+                            Nomi o'zgartirilmadi!</b>
+                            chunki avvalgi nom va yangi nom bir xil
+                            
+                            eski nom: %s
+                            yangi nom: %s
+                            """.formatted(oldName, branch.getName());
+
+                } else {
+                    branch.setName(text);
+                    branchRepository.save(branch);
+                    res = """
+                            ✅ <b>Muvaffaqiyatli o'zgartirildi!</b>
+                            
+                            📍 <b>Eski eski nomi:</b> <code>%s</code>
+                            📍 <b>Yangi yangi nomi:</b> <code>%s</code>
+                            """.formatted(oldName, branch.getName());
+                }
+            }
+            default -> {
+                return;
+            }
+        }
+        branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId());
+        bot.sendMessage(botInfo.getId(), user.getChatId(), res, kyb.branches(branches));
+        eventCode(user, "get branches lists");
+        getBranchesLists(botInfo, user, branch.getName());
+    }
+
+    public void addImg(Long id, BotUser user, PhotoSize photoSize) {
+        Optional<Branch> bOp = branchRepository.findById(user.getBranchId());
+        if (bOp.isEmpty()) {
+            return;
+        }
+        Branch branch = bOp.get();
+        branch.setImageUrl(photoSize.getFileId());
+        branch.setHasImage(true);
+        branchRepository.save(branch);
+        eventCode(user, "get branches lists");
+        bot.sendMessage(id, user.getChatId(), "✅ Muvaffaqiyatli o'zgartirildi!", kyb.branches(branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, id)));
+        bot.sendPhoto(id, user.getChatId(), branch.getImageUrl(), kyb.crudBranch(true), false, aboutBranch(branch));
+    }
+
+    public void addImg(Long id, BotUser user, String text, Message message) {
+        if (text.equals(backButton)) {
+            Optional<Branch> bOp = branchRepository.findById(user.getBranchId());
+            if (bOp.isEmpty()) {
+                return;
+            }
+            Branch branch = bOp.get();
+            eventCode(user, "get branches lists");
+            bot.sendMessage(id, user.getChatId(), text, kyb.branches(branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, id)));
+            if (branch.getHasImage()) {
+
+                bot.sendPhoto(id, user.getChatId(), branch.getImageUrl(), kyb.crudBranch(false), false, aboutBranch(branch));
+            } else bot.sendMessage(id, user.getChatId(), aboutBranch(branch) , kyb.crudBranch(false));
+        } else {
+            bot.deleteMessage(id, message.getChatId(), message.getMessageId());
+        }
     }
 }
