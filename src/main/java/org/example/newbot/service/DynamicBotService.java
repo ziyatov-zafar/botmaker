@@ -10,9 +10,7 @@ import org.example.newbot.bot.online_magazine_bot.user.UserOnlineMagazineKyb;
 import org.example.newbot.bot.online_magazine_bot.user.UserOnlineMagazineMsg;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.BotInfo;
-import org.example.newbot.repository.BotInfoRepository;
-import org.example.newbot.repository.BranchRepository;
-import org.example.newbot.repository.LocationRepository;
+import org.example.newbot.repository.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -55,6 +53,8 @@ public class DynamicBotService {
     private final ProductVariantService productVariantService;
     private final LocationRepository locationRepository;
     private final BranchRepository branchRepository;
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
 
     @Value("${size}")
     public int size;
@@ -62,7 +62,7 @@ public class DynamicBotService {
     public Long adminChatId;
 
 
-    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService, LocationRepository locationRepository, BranchRepository branchRepository) {
+    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService, LocationRepository locationRepository, BranchRepository branchRepository, CartRepository cartRepository, CartItemRepository cartItemRepository) {
         this.botInfoRepository = botInfoRepository;
         this.botUserService = botUserService;
         this.categoryService = categoryService;
@@ -70,6 +70,8 @@ public class DynamicBotService {
         this.productVariantService = productVariantService;
         this.locationRepository = locationRepository;
         this.branchRepository = branchRepository;
+        this.cartRepository = cartRepository;
+        this.cartItemRepository = cartItemRepository;
     }
 
 
@@ -223,7 +225,8 @@ public class DynamicBotService {
             ), new UserOnlineMagazineFunction(
                     botUserService, this, new UserOnlineMagazineKyb(),
                     categoryService, productService, productVariantService,
-                    new UserOnlineMagazineMsg(),locationRepository,branchRepository
+                    new UserOnlineMagazineMsg(),locationRepository,
+                    branchRepository,cartRepository,cartItemRepository
             ),branchRepository);
             onlineMagazineBot.onlineMagazineBotMenu(botInfo, chatId, update, adminChatId);
         } else if (botInfo.getType().equals("logistic-bot")) {

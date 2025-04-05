@@ -1,26 +1,30 @@
 package org.example.newbot.bot.online_magazine_bot.user;
 
+import jakarta.ws.rs.core.Variant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.example.newbot.bot.Status;
-import org.example.newbot.bot.online_magazine_bot.admin.AdminOnlineMagazineKyb;
+import org.example.newbot.dto.CartItemDto;
 import org.example.newbot.dto.Json;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.*;
 import org.example.newbot.repository.BranchRepository;
+import org.example.newbot.repository.CartItemRepository;
+import org.example.newbot.repository.CartRepository;
 import org.example.newbot.repository.LocationRepository;
 import org.example.newbot.service.*;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Contact;
 import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.example.newbot.bot.StaticVariable.*;
+import static org.example.newbot.bot.Status.DRAFT;
 import static org.example.newbot.bot.Status.OPEN;
-import static org.example.newbot.bot.online_magazine_bot.user.ConstVariable.location;
-import static org.example.newbot.bot.online_magazine_bot.user.ConstVariable.menuBtn;
+import static org.example.newbot.bot.online_magazine_bot.user.ConstVariable.*;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -35,6 +39,8 @@ public class UserOnlineMagazineFunction {
     private final UserOnlineMagazineMsg msg;
     private final LocationRepository locationRepository;
     private final BranchRepository branchRepository;
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
 
     public void reply(BotInfo botInfo, Long chatId, BotUser user, Long newChatId, Integer messageId, boolean isAdmin) {
         user.setChatIdHelp(newChatId);
@@ -422,6 +428,10 @@ public class UserOnlineMagazineFunction {
             sendCategories(botInfo, user);
             return;
         }
+         if (text.equals(cardBtn(user.getLang()))){
+             showBasket(botInfo, user);
+             return;
+         }
         ResponseDto<Product> checkProduct;
         if (user.getLang().equals("uz")) {
             checkProduct = productService.findByNameUz(
@@ -432,15 +442,125 @@ public class UserOnlineMagazineFunction {
                     text, user.getCategoryId()
             );
         }
-        List<ProductVariant>variants = productVariantService.findAllByProductId(checkProduct.getData().getId()).getData();
         if (checkProduct.isSuccess()) {
-            bot.sendMessage(botInfo.getId(), user.getChatId(), text , kyb.backAndBasket(user.getLang()));
-            InlineKeyboardMarkup m = null;
-            bot.sendPhoto(botInfo.getId(), user.getChatId(),variants.get(0).getImg(),m,true , "caption");
+            List<ProductVariant> variants = productVariantService.findAllByProductId(checkProduct.getData().getId()).getData();
+            user.setProductVariantId(variants.get(0).getId());
+            user.setProductId(checkProduct.getData().getId());
+            user.setCount(1);
+            user.setEventCode("chooseProductVariant");
+            userService.save(user);
+            setVariants(botInfo.getId(), user, text, variants, checkProduct.getData(), variants.get(0));
+        } else {
+            eventCode(user, user.getDeliveryType() + "CategoryMenu");
+            sendCategories(botInfo, user);
         }
     }
 
+    private void setVariants(Long botId, BotUser user, String text, List<ProductVariant> variants, Product product, ProductVariant variant) {
+        String caption = msg.productCaption(user.getLang(), product, variant, user.getCount());
+        InlineKeyboardMarkup markup = kyb.setProductVariant(user.getLang(), variants, variant, variants.size() == 1, 1);
+        bot.sendMessage(botId, user.getChatId(), text, kyb.backAndBasket(user.getLang()));
+        bot.sendPhoto(botId, user.getChatId(), variant.getImg(), markup, true, caption);
+    }
+
+
     public void deliveryProductMenu(BotInfo botInfo, BotUser user, String text) {
         handleProduct(botInfo, user, text);
+    }
+
+    public void chooseProductVariant(BotInfo botInfo, BotUser user, String text) {
+        Category category = categoryService.findById(user.getCategoryId()).getData();
+        if (inArray(text, backButton, backButtonRu)) {
+            user.setCount(1);
+            userService.save(user);
+            handleCategory(botInfo, user, user.getLang().equals("uz") ? category.getNameUz() : category.getNameRu());
+        } else if (text.equals(cardBtn(user.getLang()))) {
+            showBasket(botInfo,user);
+        }
+    }
+
+    private void showBasket(BotInfo botInfo, BotUser user) {
+        Cart cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
+        List<CartItem> carts = cartItemRepository.findAllByActiveIsTrueAndCartId(cart.getId());
+        String basketMsg = msg.basket(convertDto(carts), user.getLang());//qilinvotti
+        bot.sendMessage(botInfo.getId(), user.getChatId(), basketMsg, kyb.basket(user.getLang() , convertDto(carts) , null));
+    }
+
+    private List<CartItemDto> convertDto(List<CartItem> carts) {
+        List<CartItemDto> list = new ArrayList<>();
+        for (CartItem cartItem : carts) {
+            Product product = productService.findById(cartItem.getProductId()).getData();
+            Category category = categoryService.findById(cartItem.getCategoryId()).getData();
+            ProductVariant variant = productVariantService.findById(cartItem.getProductVariantId()).getData();
+            CartItemDto dto = new CartItemDto();
+            dto.setId(cartItem.getId());
+            dto.setPrice(variant.getPrice());
+            dto.setTotalPrice(variant.getPrice() * cartItem.getQuantity());
+            dto.setQuantity(cartItem.getQuantity());
+            dto.setCategoryNameRu(category.getNameRu());
+            dto.setCategoryNameUz(category.getNameUz());
+            dto.setProductNameRu(product.getNameRu());
+            dto.setProductNameUz(product.getNameUz());
+            dto.setProductVariantNameRu(variant.getNameRu());
+            dto.setProductVariantNameUz(variant.getNameUz());
+            list.add(dto);
+        }
+        return list;
+    }
+
+    public void chooseProductVariant(BotInfo botInfo, BotUser user, String data, Integer messageId, CallbackQuery callbackQuery) {
+        Product product = productService.findById(user.getProductId()).getData();
+        Category category = categoryService.findById(product.getCategoryId()).getData();
+        ProductVariant variant = productVariantService.findById(user.getProductVariantId()).getData();
+        List<ProductVariant> variants = productVariantService.findAllByProductId(product.getId()).getData();
+        if (data.equals("plus")) {
+            user.setCount(user.getCount() + 1);
+        } else if (data.equals("minus")) {
+            if (user.getCount() == 1) {
+                bot.alertMessage(botInfo.getId(), callbackQuery,
+                        user.getLang().equals("uz") ? "1 dan kam tanlash mumkin emas" : "Невозможно выбрать меньше 1");
+                return;
+            }
+            user.setCount(user.getCount() - 1);
+        } else {
+            if (data.equals("count")) {
+                bot.alertMessage(botInfo.getId(), callbackQuery,
+                        user.getCount() + " " + (user.getLang().equals("uz") ? "ta" : "шт"));
+            } else if (data.equals("basket")) {
+                addBasket(user);
+                bot.alertMessage(botInfo.getId(), callbackQuery, msg.addBasketMsg(user.getLang()));
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                handleCategory(botInfo, user, user.getLang().equals("uz") ? category.getNameUz() : category.getNameRu());
+            }
+            return;
+        }
+        bot.editCaption(botInfo.getId(), user.getChatId(), messageId, msg.productCaption(
+                        user.getLang(), product, variant, user.getCount()
+                ), kyb.setProductVariant(
+                        user.getLang(), variants, variant, variants.size() == 1, user.getCount()
+                )
+        );
+        userService.save(user);
+    }
+
+    private void addBasket(BotUser user) {
+        Cart cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
+        if (cart == null) {
+            cart = new Cart();
+            cart.setUserId(user.getId());
+            cart.setActive(true);
+            cart.setStatus(DRAFT);
+            cart.setType(user.getDeliveryType());
+            cartRepository.save(cart);
+            cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
+        }
+        CartItem cartItem = new CartItem();
+        cartItem.setCartId(cart.getId());
+        cartItem.setActive(true);
+        cartItem.setCategoryId(user.getCategoryId());
+        cartItem.setProductId(user.getProductId());
+        cartItem.setProductVariantId(user.getProductVariantId());
+        cartItem.setQuantity(user.getCount());
+        cartItemRepository.save(cartItem);
     }
 }

@@ -218,6 +218,7 @@ public class OnlineMagazineBot {
                             case "pickupCategoryMenu" -> userFunction.pickupCategoryMenu(botInfo, user, text);
                             case "pickupProductMenu" -> userFunction.pickupProductMenu(botInfo, user, text);
                             case "deliveryProductMenu" -> userFunction.deliveryProductMenu(botInfo, user, text);
+                            case "chooseProductVariant" -> userFunction.chooseProductVariant(botInfo,user,text);
                         }
                     }
                 } else if (message.hasContact()) {
@@ -246,6 +247,9 @@ public class OnlineMagazineBot {
                 if (data.startsWith("reply")) {
                     userFunction.reply(botInfo, user.getChatId(), user, Long.valueOf(data.split("_")[1]), messageId, false);
                 } else {
+                    if (eventCode.equals("chooseProductVariant")){
+                       userFunction.chooseProductVariant(botInfo,user,data , messageId,callbackQuery);
+                    }
                 }
             }
         }

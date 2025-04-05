@@ -15,6 +15,6 @@ public class CartItem {
     private Long productVariantId;
     private Long productId;
     private Long categoryId;
-    private int quantity;
+    private Integer quantity;
     private Boolean active;
 }

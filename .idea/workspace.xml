@@ -5,21 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8c8ccb28-d810-4f4f-95e5-059e5dfc90ca" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/dto/CartItemDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/CartItemRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/CartRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/TelegramBot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/TelegramBot.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/OnlineMagazineBot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/OnlineMagazineBot.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/BranchUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/BranchUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/ConstVariable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/ConstVariable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineFunction.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineKyb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineKyb.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineMsg.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineMsg.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/BotUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/BotUser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/Cart.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/Cart.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/CartItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/CartItem.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/OnlineMagazineBot.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/OnlineMagazineBot.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineFunction.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineFunction.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineKyb.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_magazine_bot/user/UserOnlineMagazineKyb.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser$BotUserBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser$BotUserBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$2.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" afterDir="false" />
@@ -56,33 +58,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.NewbotApplication.executor&quot;: &quot;Run&quot;,
-    &quot;extract.method.default.visibility&quot;: &quot;private&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Farobiy students/Desktop/zafar projectsa/main projects/Burger&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.NewbotApplication.executor": "Debug",
+    "extract.method.default.visibility": "private",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Farobiy students/Desktop/zafar projectsa/main projects/Burger",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;postgresql&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="org.example.newbot.repository" />
@@ -134,7 +136,7 @@
       <workItem from="1743668260934" duration="13458000" />
       <workItem from="1743736975307" duration="12034000" />
       <workItem from="1743757608287" duration="16342000" />
-      <workItem from="1743824127199" duration="20919000" />
+      <workItem from="1743824127199" duration="33132000" />
     </task>
     <servers />
   </component>

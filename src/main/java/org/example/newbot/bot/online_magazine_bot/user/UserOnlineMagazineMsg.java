@@ -1,8 +1,18 @@
 package org.example.newbot.bot.online_magazine_bot.user;
 
+import org.example.newbot.bot.StaticVariable;
+import org.example.newbot.dto.CartItemDto;
 import org.example.newbot.model.Branch;
+import org.example.newbot.model.CartItem;
+import org.example.newbot.model.Product;
+import org.example.newbot.model.ProductVariant;
 import org.telegram.telegrambots.meta.api.objects.Location;
 
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Locale;
+
+import static org.example.newbot.bot.StaticVariable.formatPrice;
 import static org.example.newbot.bot.online_magazine_bot.user.BranchUtil.formatDistance;
 import static org.example.newbot.bot.online_magazine_bot.user.BranchUtil.haversine;
 
@@ -167,12 +177,138 @@ public class UserOnlineMagazineMsg {
     public String emptyProducts(String categoryName, String lang) {
         if (lang.equals("uz")) {
             return String.format("""
-                %s ning mahsulotlari tez orada joylanadi, boshqa kategoriyadagi mahsulotlarni kirib ko'rishingiz mumkin.""", categoryName);
+                    %s ning mahsulotlari tez orada joylanadi, boshqa kategoriyadagi mahsulotlarni kirib ko'rishingiz mumkin.""", categoryName);
         } else if (lang.equals("ru")) {
             return String.format("""
-                В категории %s товары скоро появятся, вы можете посмотреть товары в других категориях.""", categoryName);
+                    В категории %s товары скоро появятся, вы можете посмотреть товары в других категориях.""", categoryName);
         }
         return "";
+    }
+
+    public String productCaption(String lang, Product product, ProductVariant variant, int count) {
+        // Narxni formatlash
+        String price = formatPrice(variant.getPrice(), lang);
+        String totalPrice = formatPrice(variant.getPrice() * count, lang);
+
+        if (lang.equals("uz")) {
+            return """
+                    🍽 <b>%s - %s</b>
+                    
+                    📝 <i>%s</i>
+                    💰 Narxi: %s
+                    
+                    %s(%s) * %d = %s
+                    🔢 Umumiy narxi: %s
+                    """.formatted(
+                    product.getNameUz(),
+                    variant.getNameUz(),
+                    product.getDescriptionUz(),
+                    price, product.getNameUz(), variant.getNameUz(), count, totalPrice,
+                    totalPrice
+            );
+        } else if (lang.equals("ru")) {
+            return """
+                    🍽 <b>%s - %s</b>
+                    
+                    📝 <i>%s</i>
+                    💰 Цена: %s
+                    
+                    %s(%s) * %d = %s
+                    🔢 Общая цена: %s
+                    """.formatted(
+                    product.getNameRu(),
+                    variant.getNameRu(),
+                    product.getDescriptionRu(),
+                    price, product.getNameUz(), variant.getNameUz(), count, totalPrice,
+                    totalPrice
+            );
+        } else {
+            // Default fallback
+            return """
+                    🍽 <b>%s - %s</b>
+                    
+                    📝 <i>%s</i>
+                    💰 Price: %s
+                    
+                    🔢 Total Price: %s
+                    """.formatted(
+                    product.getNameUz(),
+                    variant.getNameUz(),
+                    product.getDescriptionUz(),
+                    price,
+                    totalPrice
+            );
+        }
+    }
+
+
+    private String formatPrice(double price, String lang) {
+        Locale locale;
+        String currency;
+
+        switch (lang) {
+            case "ru" -> {
+                locale = new Locale("ru", "RU");
+                currency = " сум";
+            }
+            case "uz" -> {
+                locale = new Locale("uz", "UZ");
+                currency = " so‘m";
+            }
+            default -> {
+                locale = Locale.US;
+                currency = " UZS";
+            }
+        }
+
+        NumberFormat nf = NumberFormat.getInstance(locale);
+        nf.setMaximumFractionDigits(2);
+        nf.setMinimumFractionDigits(0); // faqat kerakli hollarda .00 ni ko‘rsatadi
+
+        return nf.format(price) + currency;
+    }
+
+    public String addBasketMsg(String lang) {
+        if (lang.equals("uz")) {
+            return "✅ Savatga muvaffaqiyatli qo‘shildi!";
+
+        }
+        return "✅ Успешно добавлено в корзину!";
+
+    }
+
+    public String basket(List<CartItemDto> carts, String lang) {
+        StringBuilder s = new StringBuilder();
+        double sum = 0D;
+
+        for (CartItemDto dto : carts) {
+            sum += dto.getQuantity() * dto.getPrice();
+            if (lang.equals("uz")) {
+                s.append(String.format(
+                        "\uD83C\uDF0A %s (%s) * %d = 💰 %s\n\n",
+                        dto.getProductNameUz(),
+                        dto.getProductVariantNameUz(),
+                        dto.getQuantity(),
+                        formatPrice(dto.getPrice() * dto.getQuantity(), lang)
+                ));
+            } else if (lang.equals("ru")) {
+                s.append(String.format(
+                        "\uD83C\uDF0A %s (%s) * %d  = %s\n\n",
+                        dto.getProductNameRu(),
+                        dto.getProductVariantNameRu(),
+                        dto.getQuantity(),
+                        formatPrice(dto.getPrice() * dto.getQuantity(), lang)
+                ));
+            }
+        }
+
+        if (lang.equals("uz")) {
+            s.append("\n\uD83D\uDCB3 Umumiy narxi: ").append(formatPrice(sum, lang));
+        } else if (lang.equals("ru")) {
+            s.append("\n\uD83D\uDCB3 Общая сумма: ").append(formatPrice(sum, lang));
+        }
+
+        return s.toString();
     }
 
 }

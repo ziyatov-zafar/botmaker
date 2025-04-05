@@ -43,4 +43,7 @@ public class BotUser {
     private Double longitude;
     private String address;
     private Integer branchId;
+    private Integer count;
+
+    private Long cartId;
 }

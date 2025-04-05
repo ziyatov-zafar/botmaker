@@ -15,7 +15,7 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
-    private Long botId;
     private String status;
     private String type;
+    private Boolean active;
 }

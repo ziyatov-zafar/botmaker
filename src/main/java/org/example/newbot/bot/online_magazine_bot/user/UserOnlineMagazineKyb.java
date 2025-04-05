@@ -1,11 +1,11 @@
 package org.example.newbot.bot.online_magazine_bot.user;
 
 import org.example.newbot.bot.Kyb;
-import org.example.newbot.model.Branch;
-import org.example.newbot.model.Category;
-import org.example.newbot.model.Location;
-import org.example.newbot.model.Product;
+import org.example.newbot.dto.CartItemDto;
+import org.example.newbot.model.*;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
@@ -166,6 +166,7 @@ public class UserOnlineMagazineKyb extends Kyb {
         rows.add(row);
         row = new KeyboardRow();
         row.add(lang.equals("uz") ? backButton : backButtonRu);
+        row.add(cardBtn(lang));
         rows.add(row);
         return markup(rows);
     }
@@ -177,5 +178,50 @@ public class UserOnlineMagazineKyb extends Kyb {
         row.add(new KeyboardButton(cardBtn(lang)));
         rows.add(row);
         return markup(rows);
+    }
+
+    public InlineKeyboardMarkup setProductVariant(String lang, List<ProductVariant> variants, ProductVariant selectedVariant, boolean isOne, int count) {
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        // ➖➕ soni uchun tugmalar
+        List<InlineKeyboardButton> quantityRow = new ArrayList<>();
+        quantityRow.add(createButton("➖", "minus"));
+        quantityRow.add(createButton("" + count, "count"));
+        quantityRow.add(createButton("➕", "plus"));
+        rows.add(quantityRow);
+
+        // 🔘 Variant tanlash (agar bitta bo'lmasa)
+        if (!isOne) {
+            List<InlineKeyboardButton> variantRow = new ArrayList<>();
+            for (int i = 0; i < variants.size(); i++) {
+                ProductVariant variant = variants.get(i);
+                String name = lang.equals("uz") ? variant.getNameUz() : variant.getNameRu();
+                boolean isSelected = selectedVariant.getId().equals(variant.getId());
+
+                variantRow.add(createButton((isSelected ? "✅ " : "") + name, variant.getId()));
+
+                // Har 3 tadan keyin yangi qatorga o‘tish
+                if ((i + 1) % 3 == 0) {
+                    rows.add(variantRow);
+                    variantRow = new ArrayList<>();
+                }
+            }
+            if (!variantRow.isEmpty()) rows.add(variantRow);
+        }
+
+        // 📥 Savat tugmasi
+        List<InlineKeyboardButton> cartRow = new ArrayList<>();
+        cartRow.add(createButton(
+                lang.equals("uz") ? cardBtn(lang) + "ga qo‘shish" : "Добавить в " + cardBtn(lang),
+                "basket"
+        ));
+
+        rows.add(cartRow);
+
+        return new InlineKeyboardMarkup(rows);
+    }
+
+    public InlineKeyboardMarkup basket(String lang, List<CartItemDto> list , Long cartItemId) {
+        
     }
 }
