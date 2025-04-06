@@ -27,6 +27,8 @@ public class BotUser {
     private String phone;
     private String helperPhone;
     private String role;
+    private String paymentTypeRu;
+    private String paymentTypeUz;
     private Integer page=0;
     private String eventCode;
     private String helperValue;

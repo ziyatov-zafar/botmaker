@@ -176,6 +176,14 @@ public class OnlineMagazineBot {
                     userFunction.reply(botInfo, user.getChatId(), user, Long.valueOf(data.split("_")[1]), messageId, true);
                     return;
                 }
+                if (data.startsWith("finish")){
+                    adminFunction.finish(botInfo , user,data,messageId,callbackQuery);
+                    return;
+                }
+                if (data.startsWith("cancelorder")){
+                    adminFunction.finish1(botInfo , user,data,messageId,callbackQuery);
+                    return;
+                }
                 switch (eventCode) {
                     case "get all users" ->
                             adminFunction.getAllUsers(botInfo.getId(), botInfo, user, data, callbackQuery, messageId);
@@ -219,6 +227,8 @@ public class OnlineMagazineBot {
                             case "pickupProductMenu" -> userFunction.pickupProductMenu(botInfo, user, text);
                             case "deliveryProductMenu" -> userFunction.deliveryProductMenu(botInfo, user, text);
                             case "chooseProductVariant" -> userFunction.chooseProductVariant(botInfo,user,text);
+                            case "getPhoneNumber" -> userFunction.getPhoneNumber(botInfo , user,text);
+                            case "branchLists" -> userFunction.branchLists(botInfo , user,text);
                         }
                     }
                 } else if (message.hasContact()) {
@@ -238,6 +248,7 @@ public class OnlineMagazineBot {
                     switch (eventCode) {
                         case "chooseLocation" -> userFunction.chooseLocation(botInfo, user, location);
                         case "chooseBranch" -> userFunction.chooseBranch(botInfo, user, location);
+                        case "branchLists" -> userFunction.branchLists(botInfo , user,location);
                     }
                 }
             } else if (update.hasCallbackQuery()) {
@@ -246,9 +257,13 @@ public class OnlineMagazineBot {
                 Integer messageId = callbackQuery.getMessage().getMessageId();
                 if (data.startsWith("reply")) {
                     userFunction.reply(botInfo, user.getChatId(), user, Long.valueOf(data.split("_")[1]), messageId, false);
+                } else if (data.startsWith("cancelorder")) {
+                    userFunction.cancelOrder(botInfo , user,data,callbackQuery,messageId) ;
                 } else {
                     if (eventCode.equals("chooseProductVariant")){
                        userFunction.chooseProductVariant(botInfo,user,data , messageId,callbackQuery);
+                    } else if (eventCode.equals("showBasket")) {
+                        userFunction.showBasket(botInfo,user,data,messageId,callbackQuery);
                     }
                 }
             }

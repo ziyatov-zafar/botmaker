@@ -1,18 +1,13 @@
 package org.example.newbot.bot.online_magazine_bot.user;
 
-import org.example.newbot.bot.StaticVariable;
 import org.example.newbot.dto.CartItemDto;
-import org.example.newbot.model.Branch;
-import org.example.newbot.model.CartItem;
-import org.example.newbot.model.Product;
-import org.example.newbot.model.ProductVariant;
+import org.example.newbot.model.*;
 import org.telegram.telegrambots.meta.api.objects.Location;
 
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-import static org.example.newbot.bot.StaticVariable.formatPrice;
 import static org.example.newbot.bot.online_magazine_bot.user.BranchUtil.formatDistance;
 import static org.example.newbot.bot.online_magazine_bot.user.BranchUtil.haversine;
 
@@ -41,6 +36,14 @@ public class UserOnlineMagazineMsg {
         if (lang.equals("uz")) return "📲 🇺🇿 Ro‘yxatdan o‘tish";
         return "📲 🇷🇺 Регистрация";
     }
+
+    public String contactBtn1(String lang) {
+        if (lang.equals("uz")) {
+            return "📲 🇺🇿 Telefon raqamni ulashish";  // O'zbek tilida
+        }
+        return "📲 🇷🇺 Поделиться номером телефона";  // Rus tilida "Telefon raqamni ulashish"
+    }
+
 
     public String menu(String lang) {
         return lang.equals("uz") ? "🏠 Asosiy menyudasiz" : "🏠 Вы находитесь в главном меню";
@@ -309,6 +312,301 @@ public class UserOnlineMagazineMsg {
         }
 
         return s.toString();
+    }
+
+    public String clearBasket(String lang) {
+        if (lang.equals("uz")) {
+            return "🧺 Savat tozalandi. Yangi mahsulotlar qo‘shishingiz mumkin ✅";
+        } else {
+            return "🧺 Корзина очищена. Вы можете добавить новые товары ✅";
+        }
+    }
+
+    public String emptyBasket(String lang) {
+        if (lang.equals("uz")) {
+            return "🧺 Savat hozircha bo‘sh. Mahsulotlar qo‘shib ko‘ring!";
+        } else if (lang.equals("ru")) {
+            return "🧺 Ваша корзина пока пуста. Попробуйте добавить товары!";
+        } else {
+            return "🧺 Your basket is currently empty. Try adding some products!";
+        }
+    }
+
+
+    public String choosePaymentType(String lang) {
+        if (lang.equals("uz")) {
+            return "\uD83D\uDCB3 To‘lov turini tanlang:";
+        } else if (lang.equals("ru")) {
+            return "\uD83D\uDCB3 Выберите способ оплаты:";
+        } else {
+            return "\uD83D\uDCB3 Please choose a payment method:";
+        }
+    }
+
+    public String getPhoneNumber(String lang) {
+        if (lang.equals("uz")) {
+            return "📱 Telefon raqamingizni quyidagi formatda yuboring yoki kiriting: +998 ** *** ** **";
+        } else if (lang.equals("ru")) {
+            return "📱 Пожалуйста, введите или отправьте свой номер телефона в следующем формате: +998 ** *** ** **";
+        }
+        return "";
+    }
+
+    public String invalidPhoneNumber(String lang) {
+        if (lang.equals("uz")) {
+            return "Iltimos, telefon raqamingizni to'g'ri formatda kiriting: +998 ** *** ** **";
+        } else if (lang.equals("ru")) {
+            return "Пожалуйста, введите ваш номер телефона в правильном формате: +998 ** *** ** **";
+        } else {
+            return "Please enter your phone number in the correct format: +998 ** *** ** **";
+        }
+    }
+
+    public String basketForAdmin(List<CartItemDto> carts, String paymentType, String deliveryType, Branch branch, BotUser user, Long cartId) {
+        StringBuilder s = new StringBuilder(); // StringBuilder - samaraliroq va tejamkorroq
+        double sum = 0;
+        s.append("🆔 ID: ").append(cartId).append("\n");
+
+        // Har bir mahsulot uchun ma'lumotlarni formatlash
+        for (CartItemDto cart : carts) {
+            String productName = cart.getProductNameUz();
+            String productVariantName = cart.getProductVariantNameUz();
+            String categoryName = cart.getCategoryNameUz();
+            int count = cart.getQuantity();
+            double price = cart.getPrice();
+            double totalPrice = price * count;
+            sum += totalPrice;
+
+            // Mahsulot ma'lumotlarini formatlash
+            s.append(String.format("""
+                    🛒 Kategoriya nomi: %s
+                    🍽 Mahsulot nomi: %s
+                    🧳 Mahsulot turi: %s
+                    🔢 Mahsulotlar soni: %d
+                    💵 Mahsulot narxi: %s
+                    💰 Narxi: %s
+                    
+                    """, categoryName, productName, productVariantName, count, formatPrice(price, "uz"), formatPrice(totalPrice, "uz")));
+        }
+
+
+        s.append(String.format("""
+                        📊 Umumiy narx: %s
+                        💳 To'lov turi: %s
+                        🚚 Yetkazib berish turi: %s
+                        
+                        %s
+                        """, formatPrice(sum, "uz"), paymentType,
+                deliveryType.equals("delivery") ? "Yetkazib berish kerak" : "O'zi olib ketadi", deliveryType.equals("delivery") ? "\uD83D\uDCCD Ushbu foydalanuvchiga eng yaqin filial: " + branch.getName() : "\uD83C\uDFE2 Foydalanuvchi tanlagan filial: " + branch.getName()));
+
+        s.append(String.format(
+                """
+                        \n
+                        
+                          Foydalanuvchining ma'lumotlari:
+                        🆔 Foydalanuvchi ID: %d
+                        💬 Foydalanuvchi Chat ID: %d
+                        📱 Foydalanuvchi telefon raqami: %s
+                        📲 Telegramdagi telefon raqami: %s
+                        """, user.getId(), user.getChatId(), user.getHelperPhone(), user.getPhone()
+        ));
+        return s.toString(); // Natijani qaytarish
+    }
+
+    public String finishBasket(List<CartItemDto> carts, String lang, Long cartId, String address, BotUser user, Branch branch) {
+        StringBuilder s = new StringBuilder();
+
+        double sum = 0;
+        String deliveryType = user.getDeliveryType();
+        String paymentType = user.getLang().equals("uz") ? user.getPaymentTypeUz() : user.getPaymentTypeRu();
+
+        if (lang.equals("uz")) {
+            // Manzil va buyurtma holati
+            if (deliveryType.equals("delivery")) {
+                s.append(String.format("""
+                        🛵 Buyurtma raqami: %d
+                        📍 Manzil: %s
+                        🛑 Holat: Yangi
+                        """, cartId, address));
+            } else {
+                s.append(String.format("""
+                        🛵 Buyurtma raqami: %d
+                        📍 Manzil: %s
+                        🏢 Filial: %s
+                        """, cartId, address, branch.getName()));
+            }
+
+            // Mahsulotlar ro'yxati
+            for (CartItemDto cart : carts) {
+                String productName = cart.getProductNameUz();
+                int count = cart.getQuantity();
+                double price = cart.getPrice();
+                double totalPrice = price * count;
+                sum += totalPrice;
+                // Mahsulot nomi va soni
+                s.append(String.format("""
+                        📦 %d * %s
+                        💸 Narxi: %s
+                        """, count, productName, formatPrice(price, "uz")));
+            }
+
+            // Jami narx va to'lov turi
+            s.append(String.format("""
+                    \n\n💰 Jami: %s
+                    \n💳 To'lov turi: %s
+                    """, formatPrice(sum, "uz"), paymentType));
+        } else {
+            // Rus tilidagi matnni to'ldirish uchun
+            if (deliveryType.equals("delivery")) {
+                s.append(String.format("""
+                        🛵 Заказ номер: %d
+                        📍 Адрес: %s
+                        🛑 Статус: Новый
+                        """, cartId, address));
+            } else {
+                s.append(String.format("""
+                        🛵 Заказ номер: %d
+                        📍 Адрес: %s
+                        🏢 Филиал: %s
+                        """, cartId, address, branch.getName()));
+            }
+
+            // Mahsulotlar ro'yxati
+            for (CartItemDto cart : carts) {
+                String productName = cart.getProductNameRu();
+                int count = cart.getQuantity();
+                double price = cart.getPrice();
+                double totalPrice = price * count;
+                sum += totalPrice;
+
+                // Mahsulot nomi va soni
+                s.append(String.format("""
+                        📦 %d * %s
+                        💸 Цена: %s
+                        """, count, productName, formatPrice(price, "ru")));
+            }
+
+            // Jami narx va to'lov turi
+            s.append(String.format("""
+                    \n\n💰 Общая сумма: %s
+                    \n💳 Тип оплаты: %s
+                    """, formatPrice(sum, "ru"), paymentType));
+        }
+
+        return s.toString();
+    }
+
+
+    public String branchLists(String lang) {
+        if (lang.equals("uz")) {
+            return "🏢 Barcha filiallarning ro'yxati";
+        } else if (lang.equals("ru")) {
+            return "🏢 Список всех филиалов";
+        }
+        return "";
+    }
+
+    public String myOrders(Cart cart, List<CartItemDto> list, String lang , Branch branch) {
+        double sum = 0;
+        StringBuilder s = new StringBuilder();
+
+        if (lang.equals("uz")) {
+            for (CartItemDto dto : list) {
+                s.append("""
+                        📦 %d * %s = 💸 %s
+                        """.formatted(dto.getQuantity(), dto.getProductNameUz(), formatPrice(dto.getPrice() * dto.getQuantity(), "uz")));
+                sum += dto.getQuantity() * dto.getPrice();
+            }
+
+            return """
+                    🧾 Buyurtma raqami: %d
+                    %s
+                    
+                    %s
+                    
+                    💳 To'lov turi: %s
+                    💰 Jami: %s
+                    """.formatted(cart.getId(), branch == null ? "📍 Manzil: %s".formatted(cart.getAddress()):"📍 Filial: %s dan olib ketishingiz kerak".formatted(branch.getName()), s, cart.getPaymentTypeUz(), formatPrice(sum, "uz"));
+        } else {
+            for (CartItemDto dto : list) {
+                s.append("""
+                        📦 %d * %s = 💸 %s
+                        """.formatted(dto.getQuantity(), dto.getProductNameRu(), formatPrice(dto.getPrice() * dto.getQuantity(), "ru")));
+                sum += dto.getQuantity() * dto.getPrice();
+            }
+
+            return """
+                    🧾 Номер заказа: %d
+                    📍 Адрес: %s
+                    
+                    %s
+                    
+                    💳 Тип оплаты: %s
+                    💰 Общая сумма: %s
+                    """.formatted(cart.getId(), cart.getAddress(), s, cart.getPaymentTypeRu(), formatPrice(sum, "ru"));
+        }
+    }
+
+
+    public String emptyOrders(String lang) {
+        if (lang.equals("uz")) {
+            return "📭 Faol buyurtmalaringiz mavjud emas";
+        }
+        return "📭 У вас нет активных заказов";
+    }
+
+    public String cancelOrder(Cart cart, List<CartItemDto> list, BotUser user, Branch branch) {
+        double sum = 0;
+        StringBuilder s = new StringBuilder("❌ *Buyurtma bekor qilindi!*\n\n");
+
+        for (CartItemDto dto : list) {
+            s.append("""
+                    📦 %d × %s  
+                    💸 Narxi: %s\n
+                    """.formatted(dto.getQuantity(), dto.getProductNameUz(), formatPrice(dto.getPrice() * dto.getQuantity(), "uz")));
+            sum += dto.getQuantity() * dto.getPrice();
+        }
+
+        String username = user.getUsername() != null ? "@" + user.getUsername() : "❌ Mavjud emas";
+
+        return """
+                🧾 *Buyurtma raqami:* %d
+                %s
+                
+                %s
+                
+                💳 *To'lov turi:* %s
+                💰 *Jami:* %s
+                
+                👤 *Foydalanuvchi ma'lumotlari:*
+                🔢 ID: %d
+                💬 Chat ID: %d
+                🧑‍💼 Nickname: %s
+                🔗 Username: %s
+                📱 Telegram raqam: %s
+                ☎️ Buyurtma qoldirilgan raqam: %s
+                """.formatted(
+                cart.getId(),
+                branch == null ? "\uD83D\uDCCD *Manzil:* %s".formatted(cart.getAddress()) : "\uD83D\uDCCD *Filial:* %s dan olib ketadi".formatted(branch.getName()),
+                s,
+                cart.getPaymentTypeUz(),
+                formatPrice(sum, "uz"),
+                user.getId(),
+                user.getChatId(),
+                user.getNickname(),
+                username,
+                user.getPhone(),
+                cart.getPhone()
+        );
+    }
+
+    public String alertMsgForCancelOrder(String lang) {
+        if (lang.equals("uz")) {
+            return "❌ *Buyurtma bekor qilindi!*";
+        } else if (lang.equals("ru")) {
+            return "❌ *Заказ был отменён!*";
+        }
+        return "❌ Order canceled!";
     }
 
 }

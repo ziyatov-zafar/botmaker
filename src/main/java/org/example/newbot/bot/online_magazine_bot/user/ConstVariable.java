@@ -3,6 +3,10 @@ package org.example.newbot.bot.online_magazine_bot.user;
 import static org.example.newbot.bot.StaticVariable.*;
 
 public class ConstVariable {
+    public static String deliveryContinue = "🛒 Buyurtmani davom ettirish";
+    public static String deliveryContinueRu = "🛒 Продолжить оформление заказа";
+
+
     public static String[] menuBtn(String lang) {
         return lang.equals("uz") ? new String[]{
                 "🛍️ Buyurtma berish",

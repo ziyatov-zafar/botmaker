@@ -2,11 +2,14 @@ package org.example.newbot.bot.online_magazine_bot.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.example.newbot.dto.CartItemDto;
 import org.example.newbot.dto.Json;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.*;
 import org.example.newbot.repository.BotInfoRepository;
 import org.example.newbot.repository.BranchRepository;
+import org.example.newbot.repository.CartItemRepository;
+import org.example.newbot.repository.CartRepository;
 import org.example.newbot.service.*;
 import org.springframework.data.domain.Page;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -16,13 +19,11 @@ import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.text.NumberFormat;
+import java.util.*;
 
 import static org.example.newbot.bot.StaticVariable.*;
-import static org.example.newbot.bot.Status.DRAFT;
-import static org.example.newbot.bot.Status.OPEN;
+import static org.example.newbot.bot.Status.*;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -36,6 +37,8 @@ public class AdminOnlineMagazineFunction {
     private final ProductService productService;
     private final ProductVariantService productVariantService;
     private final BranchRepository branchRepository;
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
 
     public void start(BotInfo botInfo, BotUser user) {
         List<Branch> branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId());
@@ -61,12 +64,189 @@ public class AdminOnlineMagazineFunction {
         botUserService.save(user);
     }
 
+    private List<CartItemDto> convertDto(List<CartItem> carts) {
+        List<CartItemDto> list = new ArrayList<>();
+        for (CartItem cartItem : carts) {
+            Product product = productService.findById(cartItem.getProductId()).getData();
+            Category category = categoryService.findById(cartItem.getCategoryId()).getData();
+            ProductVariant variant = productVariantService.findById(cartItem.getProductVariantId()).getData();
+            CartItemDto dto = new CartItemDto();
+            dto.setId(cartItem.getId());
+            dto.setPrice(variant.getPrice());
+            dto.setTotalPrice(variant.getPrice() * cartItem.getQuantity());
+            dto.setQuantity(cartItem.getQuantity());
+            dto.setCategoryNameRu(category.getNameRu());
+            dto.setCategoryNameUz(category.getNameUz());
+            dto.setProductNameRu(product.getNameRu());
+            dto.setProductNameUz(product.getNameUz());
+            dto.setProductVariantNameRu(variant.getNameRu());
+            dto.setProductVariantNameUz(variant.getNameUz());
+            list.add(dto);
+        }
+        return list;
+    }
+
+    private String formatPrice(double price, String lang) {
+        Locale locale;
+        String currency;
+
+        switch (lang) {
+            case "ru" -> {
+                locale = new Locale("ru", "RU");
+                currency = " сум";
+            }
+            case "uz" -> {
+                locale = new Locale("uz", "UZ");
+                currency = " so‘m";
+            }
+            default -> {
+                locale = Locale.US;
+                currency = " UZS";
+            }
+        }
+
+        NumberFormat nf = NumberFormat.getInstance(locale);
+        nf.setMaximumFractionDigits(2);
+        nf.setMinimumFractionDigits(0); // faqat kerakli hollarda .00 ni ko‘rsatadi
+
+        return nf.format(price) + currency;
+    }
+
+    public String myOrders(Cart cart, List<CartItemDto> list, String lang, BotUser user) {
+        double sum = 0;
+        StringBuilder s = new StringBuilder();
+
+        if (lang.equals("uz")) {
+            for (CartItemDto dto : list) {
+                s.append("""
+                        📦 %d * %s(%s) = 💸 %s
+                        """.formatted(dto.getQuantity(), dto.getProductNameUz(), dto.getProductVariantNameUz(), formatPrice(dto.getPrice() * dto.getQuantity(), "uz")));
+                sum += dto.getQuantity() * dto.getPrice();
+            }
+
+            return """
+                    🧾 Buyurtma raqami: %d
+                    📍 Manzil: %s
+                    
+                    %s
+                    
+                    💳 To'lov turi: %s
+                    💰 Jami: %s
+                    
+                    👤 Foydalanuvchi ma'lumotlari:
+                    
+                    🆔 Id: %d
+                    💬 Chat ID: %d
+                    🔹 Username: %s
+                    🧑 Nickname: %s
+                    ☎️ Buyurtma uchun qoldirilgan raqam: %s
+                    """.formatted(
+                    cart.getId(),
+                    cart.getAddress(),
+                    s,
+                    cart.getPaymentTypeUz(),
+                    formatPrice(sum, "uz"),
+                    user.getId(),
+                    user.getChatId(),
+                    user.getUsername() == null ? "❌ Yo'q" : ("@" + user.getUsername()),
+                    user.getNickname(),
+                    cart.getPhone()
+            );
+        } else {
+            for (CartItemDto dto : list) {
+                s.append("""
+                        📦 %d * %s(%s) = 💸 %s
+                        """.formatted(dto.getQuantity(), dto.getProductNameRu(), dto.getProductVariantNameRu(), formatPrice(dto.getPrice() * dto.getQuantity(), "ru")));
+                sum += dto.getQuantity() * dto.getPrice();
+            }
+
+            return """
+                    🧾 Номер заказа: %d
+                    📍 Адрес: %s
+                    
+                    %s
+                    
+                    💳 Тип оплаты: %s
+                    💰 Общая сумма: %s
+                    """.formatted(cart.getId(), cart.getAddress(), s, cart.getPaymentTypeRu(), formatPrice(sum, "ru"));
+        }
+    }
+
+    public String myOrders1(Cart cart, List<CartItemDto> list, String lang, Branch branch, BotUser user) {
+        double sum = 0;
+        StringBuilder s = new StringBuilder();
+
+        if (lang.equals("uz")) {
+            for (CartItemDto dto : list) {
+                s.append("""
+                        📦 %d * %s(%s) = 💸 %s
+                        """.formatted(dto.getQuantity(), dto.getProductNameUz(), dto.getProductVariantNameUz(), formatPrice(dto.getPrice() * dto.getQuantity(), "uz")));
+                sum += dto.getQuantity() * dto.getPrice();
+            }
+
+            return """
+                     🧾 Buyurtma raqami: %d
+                     📍 Filial: %s dan olib ketadi
+                    
+                     %s
+                    
+                     💳 To'lov turi: %s
+                     💰 Jami: %s
+                    
+                     👤 Foydalanuvchi ma'lumotlari:
+                    
+                    🆔 Id: %d
+                    💬 Chat ID: %d
+                    🔹 Username: %s
+                    🧑 Nickname: %s
+                    ☎️ Buyurtma uchun qoldirilgan raqam: %s
+                    """.formatted(cart.getId(), branch.getName(), s, cart.getPaymentTypeUz(), formatPrice(sum, "uz"), user.getId(),
+                    user.getChatId(),
+                    user.getUsername() == null ? "❌ Yo'q" : ("@" + user.getUsername()),
+                    user.getNickname(), cart.getPhone());
+        } else {
+            for (CartItemDto dto : list) {
+                s.append("""
+                        📦 %d * %s = 💸 %s
+                        """.formatted(dto.getQuantity(), dto.getProductNameRu(), formatPrice(dto.getPrice() * dto.getQuantity(), "ru")));
+                sum += dto.getQuantity() * dto.getPrice();
+            }
+
+            return """
+                    🧾 Номер заказа: %d
+                    📍 Адрес: %s
+                    
+                    %s
+                    
+                    💳 Тип оплаты: %s
+                    💰 Общая сумма: %s
+                    """.formatted(cart.getId(), cart.getAddress(), s, cart.getPaymentTypeRu(), formatPrice(sum, "ru"));
+        }
+    }
+
     public void menu(Long botId, BotUser user, String text, BotInfo botInfo, Long adminChatId) {
         if (text.equals(adminOnlineMagazineMenu[0])) {
             bot.sendMessage(botId, user.getChatId(), text, kyb.usersPage());
             eventCode(user, "users page");
         } else if (text.equals(adminOnlineMagazineMenu[1])) {
-
+            List<Cart> carts = cartRepository.findAllByStatusAndBotIdAndActiveIsTrueOrderByIdAsc(OPEN, botId);
+            if (carts.isEmpty()) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), "📭 Faol buyurtmalar mavjud ema", kyb.menu);
+                return;
+            }
+            carts.forEach(cart -> {
+                List<CartItem> list = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cart.getId());
+                BotUser u = botUserService.findByUserId(cart.getUserId(), botId).getData();
+                if (cart.getType().equals("delivery")) {
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), myOrders(cart, convertDto(list), "uz", u), kyb.cancelBtn("uz", cart.getId()));
+                } else {
+                    Optional<Branch> bOp = branchRepository.findById(cart.getBranchId());
+                    if (bOp.isEmpty())
+                        return;
+                    Branch branch = bOp.get();
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), myOrders1(cart, convertDto(list), "uz", branch, u), kyb.cancelBtn("uz", cart.getId()));
+                }
+            });
         } else if (text.equals(adminOnlineMagazineMenu[2])) {
             ResponseDto<List<Category>> checkCategories = categoryService.findAllByBotId(botId);
             if (!checkCategories.isSuccess()) {
@@ -937,7 +1117,7 @@ public class AdminOnlineMagazineFunction {
             }
             case "edit name uz", "edit name ru", "edit desc uz", "edit desc ru", "edit price" -> {
                 ProductVariant productVariant = productVariantService.findById(user.getProductVariantId()).getData();
-                String price = formatPrice(productVariant.getPrice());
+                String price = formatPrice(productVariant.getPrice(), "uz");
                 bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
                 String s = switch (data) {
                     case "edit name uz" ->
@@ -1099,7 +1279,7 @@ public class AdminOnlineMagazineFunction {
                     variants = productVariantService.findAllByProductId(user.getProductId()).getData();
                     user.setProductVariantId(variant.getId());
                     botUserService.save(user);
-                    bot.sendMessage(botInfo.getId(), user.getChatId(), text , kyb.backBtn);
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), text, kyb.backBtn);
                     bot.sendPhoto(botInfo.getId(), user.getChatId(), variant.getImg(), kyb.getProductVariantsAndEditProductBtn(variants, user.getProductVariantId()), false, "✅ Muvaffaqiyatli qo'shildi" + aboutCategoryWithPhoto(true, product, variant.getPrice(), variant, "uz"));
                     eventCode(user, "crud product");
                 } else if (text.equals("❌ Yo'q")) {
@@ -1110,11 +1290,11 @@ public class AdminOnlineMagazineFunction {
                 return;
             }
             case "add product variant to product get img" -> {
-                s = "Ushbu turni haqiqatdan hamqo'shmoqchimisiz\n\n" + ("""
+                s = "Ushbu turni haqiqatdan ham qo'shmoqchimisiz\n\n" + ("""
                         Tur nomi(uz) %s
                         Tur nomi(ru) %s
                         Tur narxi:  %s
-                        """.formatted(variant.getNameUz(), variant.getNameRu(), formatPrice(variant.getPrice())));
+                        """.formatted(variant.getNameUz(), variant.getNameRu(), formatPrice(variant.getPrice(), "uz")));
                 e = "is add product variant to product";
                 eventCode(user, e);
                 variant.setImg(text);
@@ -1216,7 +1396,7 @@ public class AdminOnlineMagazineFunction {
             branchRepository.save(branch);
         }
         if (eventCode.equals("get new branch name")) {
-            Branch checkbranch = branchRepository.findByNameAndActiveIsTrue(text);
+            Branch checkbranch = branchRepository.findByNameAndBotIdAndActiveIsTrue(text, botInfo.getId());
             if (checkbranch != null) {
                 bot.sendMessage(botInfo.getId(), user.getChatId(), """
                         ⚠️ <b>Diqqat!</b>
@@ -1354,7 +1534,7 @@ public class AdminOnlineMagazineFunction {
             menu(botInfo.getId(), user, adminOnlineMagazineMenu[5], botInfo, bot.adminChatId);
             return;
         }
-        Branch branch = branchRepository.findByNameAndActiveIsTrue(text);
+        Branch branch = branchRepository.findByNameAndBotIdAndActiveIsTrue(text, botInfo.getId());
         if (branch == null) {
             wrongBtn(botInfo.getId(), user.getChatId(), kyb.branches(branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId())));
             return;
@@ -1551,15 +1731,15 @@ public class AdminOnlineMagazineFunction {
             }
             case "change_name" -> {
                 String oldName = branch.getName();
-                Branch editBranch = branchRepository.findByNameAndActiveIsTrue(text);
+                Branch editBranch = branchRepository.findByNameAndBotIdAndActiveIsTrue(text, botInfo.getId());
                 if (editBranch != null) {
                     bot.sendMessage(botInfo.getId(), user.getChatId(),
                             """
-                            ❌ <b>Operatsiya bekor qilindi!</b>
-                            
-                            Sababi: bunday nomli boshqa filial allaqachon mavjud.
-                            Iltimos, ro‘yxatdan birini tanlang yoki yangi filial qo'shing.
-                            """, kyb.branches(branches));
+                                    ❌ <b>Operatsiya bekor qilindi!</b>
+                                    
+                                    Sababi: bunday nomli boshqa filial allaqachon mavjud.
+                                    Iltimos, ro‘yxatdan birini tanlang yoki yangi filial qo'shing.
+                                    """, kyb.branches(branches));
 
                     eventCode(user, "get branches lists");
                     getBranchesLists(botInfo, user, branch.getName());
@@ -1621,9 +1801,37 @@ public class AdminOnlineMagazineFunction {
             if (branch.getHasImage()) {
 
                 bot.sendPhoto(id, user.getChatId(), branch.getImageUrl(), kyb.crudBranch(false), false, aboutBranch(branch));
-            } else bot.sendMessage(id, user.getChatId(), aboutBranch(branch) , kyb.crudBranch(false));
+            } else bot.sendMessage(id, user.getChatId(), aboutBranch(branch), kyb.crudBranch(false));
         } else {
             bot.deleteMessage(id, message.getChatId(), message.getMessageId());
         }
+    }
+
+    public void finish(BotInfo botInfo, BotUser user, String data, Integer messageId, CallbackQuery callbackQuery) {
+        Optional<Cart> cOp = cartRepository.findById(Long.valueOf(data.split("_")[1]));
+        if (cOp.isEmpty()) {
+            return;
+        }
+        Cart cart = cOp.get();
+        cart.setStatus(FINISH);
+        cartRepository.save(cart);
+        bot.alertMessage(botInfo.getId(), callbackQuery, "Muvaffaqiyatli yakunlandi");
+        bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+        bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId + 1);
+        bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId + 1 + 1);
+        start(botInfo, user);
+    }
+
+    public void finish1(BotInfo botInfo, BotUser user, String data, Integer messageId, CallbackQuery callbackQuery) {
+        Optional<Cart> cOp = cartRepository.findById(Long.valueOf(data.split("_")[1]));
+        if (cOp.isEmpty()) {
+            return;
+        }
+        Cart cart = cOp.get();
+        cart.setStatus(FINISH);
+        cartRepository.save(cart);
+        bot.alertMessage(botInfo.getId(), callbackQuery, "Muvaffaqiyatli yakunlandi");
+        bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+        start(botInfo, user);
     }
 }

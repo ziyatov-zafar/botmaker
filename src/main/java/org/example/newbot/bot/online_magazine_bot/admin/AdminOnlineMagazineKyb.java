@@ -315,4 +315,16 @@ public class AdminOnlineMagazineKyb extends Kyb {
         return new InlineKeyboardMarkup(rows);
     }
 
+
+    public InlineKeyboardMarkup cancelBtn(String lang, Long cartId) {
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        row.add(createButton(
+                lang.equals("uz") ? "❌ Bekor qilish" : "❌ Отменить",
+                "cancelorder_" + cartId
+        ));
+
+        rows.add(row);
+        return new InlineKeyboardMarkup(rows);
+    }
 }

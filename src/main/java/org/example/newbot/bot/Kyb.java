@@ -58,6 +58,10 @@ public class Kyb {
         return markup;
     }
 
+    public ReplyKeyboardMarkup requestContact(String word, String lang) {
+        return setKeyboards(new String[]{word, lang.equals("uz")?backButton:backButtonRu}, 1);
+    }
+
 
     public InlineKeyboardButton createButton(String text, String data) {
         return InlineKeyboardButton.builder().callbackData(data).text(text).build();
@@ -123,6 +127,7 @@ public class Kyb {
         rows.add(row);
         return markup(rows);
     }
+
     public InlineKeyboardMarkup replyBtn(Long chatId, String lang) {
         InlineKeyboardButton replyButton = createButton(lang.equals("uz") ? "✍️ Javob yozish" : "✍️ Напишите ответ", "reply_%d".formatted(chatId));
         List<List<InlineKeyboardButton>> rows = List.of(List.of(replyButton));

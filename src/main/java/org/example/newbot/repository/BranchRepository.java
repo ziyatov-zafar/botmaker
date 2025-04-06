@@ -12,8 +12,10 @@ public interface BranchRepository extends JpaRepository<Branch, Integer> {
 
     @Query("select b from Branch b where b.status = 'draft'")
     Branch draftBranch();
-    Branch findByNameAndActiveIsTrue(String name);
+//    Branch findByNameAndActiveIsTrue(String name);
 
     List<Branch> findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(String status, Long botId);
     List<Branch> findAll();
+
+    Branch findByNameAndBotIdAndActiveIsTrue(String name,Long botId);
 }

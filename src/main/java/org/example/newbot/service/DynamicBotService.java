@@ -19,9 +19,7 @@ import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.GetMe;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.send.*;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMedia;
@@ -221,7 +219,7 @@ public class DynamicBotService {
                     botUserService, new AdminOnlineMagazineFunction(
                     botInfoRepository, botUserService, this,
                     new AdminOnlineMagazineKyb(), categoryService,
-                    productService, productVariantService,branchRepository
+                    productService, productVariantService,branchRepository,cartRepository,cartItemRepository
             ), new UserOnlineMagazineFunction(
                     botUserService, this, new UserOnlineMagazineKyb(),
                     categoryService, productService, productVariantService,
@@ -253,7 +251,29 @@ public class DynamicBotService {
             return new ResponseDto<>(false, e.getMessage());
         }
     }
+    public ResponseDto<Void> sendVenue(Long botId, Long chatId, Double latitude, Double longitude, String title, String address) {
+        Optional<BotInstance> botInstance = findBotById(botId);
+        if (botInstance.isEmpty()) {
+            log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
+            return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s}".formatted(botId));
+        }
+        try {
+            // SendVenue xabarini yaratish
+            SendVenue venue = new SendVenue();
+            venue.setChatId(chatId.toString());
+            venue.setLatitude(latitude);
+            venue.setLongitude(longitude);
+            venue.setTitle(title); // Manzil nomi (masalan, restoran yoki do'kon nomi)
+            venue.setAddress(address); // Manzil (real manzil)
 
+            // Xabarni yuborish
+            botInstance.get().getBot().execute(venue);
+            return new ResponseDto<>(true, "Ok");
+        } catch (TelegramApiException e) {
+            log.error("Xabar yuborishda xato. Bot ID: {}, Chat ID: {}. Xato: {}", botId, chatId, e.getMessage(), e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+    }
     public ResponseDto<Void> sendMessage(Long botId, Long chatId, String text, boolean b) {
         Optional<BotInstance> botInstance = findBotById(botId);
         if (botInstance.isEmpty()) {
@@ -453,6 +473,28 @@ public class DynamicBotService {
         }
     }
 
+    public ResponseDto<Void> sendContact(Long botId, Long chatId, String firstname, String lastname, String phone) {
+        Optional<BotInstance> botInstance = findBotById(botId);
+        if (botInstance.isEmpty()) {
+            log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
+            return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s".formatted(botId));
+        }
+        try {
+            SendContact message = new SendContact();
+            message.setChatId(chatId.toString());
+            message.setPhoneNumber(phone);
+            message.setFirstName(firstname);
+            message.setLastName(lastname);
+            botInstance.get().getBot().execute(message);
+            return new ResponseDto<>(true, "Ok");
+        } catch (TelegramApiException e) {
+            log.error("Xabar yuborishda xato. Bot ID: {}, Chat ID: {}. Xato: {}",
+                    botId, chatId, e.getMessage(), e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+
+    }
+
     public ResponseDto<Void> sendPhoto(Long botId, Long chatId, String fileId,
                                        InlineKeyboardMarkup markup, boolean protectContent, String caption
     ) {
@@ -537,6 +579,7 @@ public class DynamicBotService {
             InputMediaPhoto mediaPhoto = new InputMediaPhoto();
             mediaPhoto.setMedia(photoId);
             mediaPhoto.setCaption(caption);
+            mediaPhoto.setParseMode(ParseMode.HTML);
             message.setMedia(mediaPhoto);
             message.setReplyMarkup(markup);
             botInstance.get().getBot().execute(message);

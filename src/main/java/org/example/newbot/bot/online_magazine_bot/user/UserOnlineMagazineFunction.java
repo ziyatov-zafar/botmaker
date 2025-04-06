@@ -20,10 +20,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static org.example.newbot.bot.StaticVariable.*;
-import static org.example.newbot.bot.Status.DRAFT;
-import static org.example.newbot.bot.Status.OPEN;
+import static org.example.newbot.bot.Status.*;
+import static org.example.newbot.bot.online_magazine_bot.user.BranchUtil.*;
 import static org.example.newbot.bot.online_magazine_bot.user.ConstVariable.*;
 
 @RequiredArgsConstructor
@@ -188,13 +190,32 @@ public class UserOnlineMagazineFunction {
             bot.sendMessage(botInfo.getId(), user.getChatId(), msg.deliveryType(lang), kyb.deliveryType(lang));
             eventCode(user, "deliveryType");
         } else if (text.equals(menu[1])) {
-
+            List<Cart> carts = cartRepository.findByStatusAndUserIdAndActiveIsTrue(OPEN, user.getId());
+            if (carts.isEmpty()) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.emptyOrders(user.getLang()), kyb.menu(user.getLang()));
+                return;
+            }
+            carts.forEach(cart -> {
+                List<CartItem> list = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cart.getId());
+                if (cart.getType().equals("delivery"))bot.sendMessage(botInfo.getId(), user.getChatId(), msg.myOrders(cart, convertDto(list), user.getLang() , null), kyb.cancelBtn(lang, cart.getId()));
+                else {
+                    Branch branch = branchRepository.findById(cart.getBranchId()).get();
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), msg.myOrders(cart, convertDto(list), user.getLang(),branch), kyb.cancelBtn(lang, cart.getId()));
+                }
+            });
         } else if (text.equals(menu[2])) {
             bot.sendMessage(botInfo.getId(), user.getChatId(), msg.commentMsg(lang), kyb.backBtn(lang));
             eventCode(user, "commentToAdmin");
         } else if (text.equals(menu[3])) {
             start(botInfo, user, true);
         } else {
+            if (inArray(text, "🏢 Filiallar bo'limi", "🏢 Отделы филиалов")) {
+                List<Branch> branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId());
+                ReplyKeyboardMarkup markup = kyb.chooseBranch(user.getLang(), branches);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.branchLists(user.getLang()), markup);
+                eventCode(user, "branchLists");
+                return;
+            }
             wrongBtn(botInfo, user, kyb.menu(user.getLang()));
             return;
         }
@@ -350,11 +371,12 @@ public class UserOnlineMagazineFunction {
         if (text.equals(backButton)) {
             menu(botInfo, user, menuBtn(user.getLang())[0]);
         } else {
-            Branch checkBranch = branchRepository.findByNameAndActiveIsTrue(text);
+            Branch checkBranch = branchRepository.findByNameAndBotIdAndActiveIsTrue(text, botInfo.getId());
             if (checkBranch != null) {
                 user.setLatitude(checkBranch.getLatitude());
                 user.setLongitude(checkBranch.getLongitude());
                 user.setAddress(checkBranch.getAddress());
+                user.setBranchId(checkBranch.getId());
                 userService.save(user);
                 if (sendCategories(botInfo, user)) {
                     eventCode(user, "pickupCategoryMenu");
@@ -367,7 +389,9 @@ public class UserOnlineMagazineFunction {
 
     public void chooseBranch(BotInfo botInfo, BotUser user, Location location) {
         List<Branch> branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId());
-        Branch branch = BranchUtil.findNearestBranch(branches, location.getLatitude(), location.getLongitude());
+        Branch branch = findNearestBranch(branches, location.getLatitude(), location.getLongitude());
+        user.setBranchId(branch.getId());
+        userService.save(user);
         if (!branch.getHasImage())
             bot.sendMessage(botInfo.getId(), user.getChatId(), msg.branchInformationWithDistance(user.getLang(), branch, location));
         else {
@@ -388,6 +412,13 @@ public class UserOnlineMagazineFunction {
                 deliveryType(botInfo, user, ConstVariable.deliveryType(user.getLang())[0]);
             } else if (user.getEventCode().equals("pickupCategoryMenu")) {
                 deliveryType(botInfo, user, ConstVariable.deliveryType(user.getLang())[1]);
+            }
+            return;
+        }
+        if (text.equals(cardBtn(user.getLang()))) {
+            if (!showBasket(botInfo, user, text)) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.emptyBasket(user.getLang()));
+                return;
             }
             return;
         }
@@ -428,10 +459,13 @@ public class UserOnlineMagazineFunction {
             sendCategories(botInfo, user);
             return;
         }
-         if (text.equals(cardBtn(user.getLang()))){
-             showBasket(botInfo, user);
-             return;
-         }
+        if (text.equals(cardBtn(user.getLang()))) {
+            if (!showBasket(botInfo, user, text)) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.emptyBasket(user.getLang()));
+                return;
+            }
+            return;
+        }
         ResponseDto<Product> checkProduct;
         if (user.getLang().equals("uz")) {
             checkProduct = productService.findByNameUz(
@@ -475,15 +509,23 @@ public class UserOnlineMagazineFunction {
             userService.save(user);
             handleCategory(botInfo, user, user.getLang().equals("uz") ? category.getNameUz() : category.getNameRu());
         } else if (text.equals(cardBtn(user.getLang()))) {
-            showBasket(botInfo,user);
+            if (!showBasket(botInfo, user, text)) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.emptyBasket(user.getLang()));
+                return;
+            }
         }
     }
 
-    private void showBasket(BotInfo botInfo, BotUser user) {
+    private boolean showBasket(BotInfo botInfo, BotUser user, String text) {
         Cart cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
-        List<CartItem> carts = cartItemRepository.findAllByActiveIsTrueAndCartId(cart.getId());
+        if (cart == null) return false;
+        List<CartItem> carts = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cart.getId());
+        if (carts.isEmpty()) return false;
         String basketMsg = msg.basket(convertDto(carts), user.getLang());//qilinvotti
-        bot.sendMessage(botInfo.getId(), user.getChatId(), basketMsg, kyb.basket(user.getLang() , convertDto(carts) , null));
+        bot.sendMessage(botInfo.getId(), user.getChatId(), text, true);
+        bot.sendMessage(botInfo.getId(), user.getChatId(), basketMsg, kyb.basket(user.getLang(), convertDto(carts)));
+        eventCode(user, "showBasket");
+        return true;
     }
 
     private List<CartItemDto> convertDto(List<CartItem> carts) {
@@ -523,14 +565,25 @@ public class UserOnlineMagazineFunction {
             }
             user.setCount(user.getCount() - 1);
         } else {
-            if (data.equals("count")) {
+            if (data.equals("count")) {//izlayman
                 bot.alertMessage(botInfo.getId(), callbackQuery,
                         user.getCount() + " " + (user.getLang().equals("uz") ? "ta" : "шт"));
             } else if (data.equals("basket")) {
-                addBasket(user);
+                addBasket(user, botInfo);
                 bot.alertMessage(botInfo.getId(), callbackQuery, msg.addBasketMsg(user.getLang()));
                 bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
                 handleCategory(botInfo, user, user.getLang().equals("uz") ? category.getNameUz() : category.getNameRu());
+            } else {
+                Long variantId = Long.valueOf(data);
+                variant = productVariantService.findById(variantId).getData();
+                variants = productVariantService.findAllByProductId(product.getId()).getData();
+                user.setProductVariantId(variantId);
+                user.setProductId(product.getId());
+                user.setCount(1);
+                userService.save(user);
+                InlineKeyboardMarkup markup = kyb.setProductVariant(user.getLang(), variants, variant, variants.size() == 1, user.getCount());
+                String caption = msg.productCaption(user.getLang(), product, variant, user.getCount());
+                bot.editMessageMedia(botInfo.getId(), user.getChatId(), messageId, markup, caption, variant.getImg());
             }
             return;
         }
@@ -543,7 +596,7 @@ public class UserOnlineMagazineFunction {
         userService.save(user);
     }
 
-    private void addBasket(BotUser user) {
+    private void addBasket(BotUser user, BotInfo botInfo) {
         Cart cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
         if (cart == null) {
             cart = new Cart();
@@ -551,16 +604,289 @@ public class UserOnlineMagazineFunction {
             cart.setActive(true);
             cart.setStatus(DRAFT);
             cart.setType(user.getDeliveryType());
+            cart.setBotId(botInfo.getId());
+            if (user.getDeliveryType().equals("delivery")) {
+                cart.setAddress(user.getAddress());
+                cart.setLat(user.getLatitude());
+                cart.setLon(user.getLongitude());
+            }
             cartRepository.save(cart);
             cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
         }
-        CartItem cartItem = new CartItem();
-        cartItem.setCartId(cart.getId());
-        cartItem.setActive(true);
-        cartItem.setCategoryId(user.getCategoryId());
-        cartItem.setProductId(user.getProductId());
-        cartItem.setProductVariantId(user.getProductVariantId());
-        cartItem.setQuantity(user.getCount());
-        cartItemRepository.save(cartItem);
+        List<CartItem> items = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cart.getId());
+        boolean isAdded = false;
+        Long itemId = null;
+        for (CartItem item : items) {
+            if (item.getProductVariantId().equals(user.getProductVariantId())) {
+                isAdded = true;
+                itemId = item.getId();
+                break;
+            }
+        }
+
+        if (isAdded) {
+            Optional<CartItem> itOp = cartItemRepository.findById(itemId);
+            if (itOp.isPresent()) {
+                CartItem cartItem = itOp.get();
+                cartItem.setQuantity(cartItem.getQuantity() + user.getCount());
+                cartItemRepository.save(cartItem);
+            }
+        } else {
+            CartItem cartItem = new CartItem();
+            cartItem.setCartId(cart.getId());
+            cartItem.setActive(true);
+            cartItem.setCategoryId(user.getCategoryId());
+            cartItem.setProductId(user.getProductId());
+            cartItem.setProductVariantId(user.getProductVariantId());
+            cartItem.setQuantity(user.getCount());
+            cartItemRepository.save(cartItem);
+        }
+    }
+
+    public void showBasket(BotInfo botInfo, BotUser user, String data, Integer messageId, CallbackQuery callbackQuery) {
+        Category category = categoryService.findById(user.getCategoryId()).getData();
+        switch (data) {
+            case "continueDelivery" -> {
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                handleCategory(botInfo, user, user.getLang().equals("uz") ? category.getNameUz() : category.getNameRu());
+            }
+            case "go delivery" ->
+                    bot.editMessageText(botInfo.getId(), user.getChatId(), messageId, msg.choosePaymentType(user.getLang()), kyb.choosePaymentType(user.getLang()));
+            case "pay_card", "pay_cash" -> {
+                user.setPaymentTypeUz(data.equals("pay_card") ? "💳 Karta orqali" : "💵 Naqd to'lov");
+                user.setPaymentTypeRu(data.equals("pay_card") ? "💳 Через карту" : "💵 Наличные");
+                user.setEventCode("getPhoneNumber");
+                userService.save(user);
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.getPhoneNumber(user.getLang()), kyb.requestContact(user.getPhone(), user.getLang()));
+            }
+            case "cancel_payment" -> {
+                Cart cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
+                List<CartItem> carts = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cart.getId());
+                String basketMsg = msg.basket(convertDto(carts), user.getLang());
+                bot.editMessageText(botInfo.getId(), user.getChatId(), messageId, basketMsg, kyb.basket(user.getLang(), convertDto(carts)));
+            }
+            case "clear" -> {
+                clearBasket(user);
+                bot.alertMessage(botInfo.getId(), callbackQuery, msg.clearBasket(user.getLang()));
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                handleCategory(botInfo, user, user.getLang().equals("uz") ? category.getNameUz() : category.getNameRu());
+            }
+            default -> {
+                long cartItemId;
+                boolean isAdded = false;
+                if (data.startsWith("minus")) {
+                    cartItemId = Long.parseLong(data.split("_")[1]);
+                } else if (data.startsWith("plus")) {
+                    cartItemId = Long.parseLong(data.split("_")[1]);
+                    isAdded = true;
+                } else {
+                    bot.alertMessage(botInfo.getId(), callbackQuery, data);
+                    return;
+                }
+                Optional<CartItem> ciOp = cartItemRepository.findById(cartItemId);
+                if (ciOp.isPresent()) {
+                    CartItem cartItem = ciOp.get();
+                    if (isAdded) {
+                        cartItem.setQuantity(cartItem.getQuantity() + 1);
+                    } else {
+                        if (cartItem.getQuantity() == 1) {
+                            cartItem.setActive(false);
+                        } else {
+                            cartItem.setQuantity(cartItem.getQuantity() - 1);
+                        }
+                    }
+                    cartItemRepository.save(cartItem);
+                    Cart cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
+                    List<CartItem> carts = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cart.getId());
+                    if (carts.isEmpty()) {
+                        bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                        bot.alertMessage(botInfo.getId(), callbackQuery, msg.emptyBasket(user.getLang()));
+                        handleCategory(botInfo, user, user.getLang().equals("uz") ? category.getNameUz() : category.getNameRu());
+                        return;
+                    }
+                    String basketMsg = msg.basket(convertDto(carts), user.getLang());
+                    bot.editMessageText(botInfo.getId(), user.getChatId(), messageId, basketMsg, kyb.basket(user.getLang(), convertDto(carts)));
+                    eventCode(user, "showBasket");
+                }
+            }
+        }
+    }
+
+    private void clearBasket(BotUser user) {
+        Cart cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
+        List<CartItem> items = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cart.getId());
+        for (CartItem item : items) {
+            item.setActive(false);
+            cartItemRepository.save(item);
+        }
+    }
+
+    public void getPhoneNumber(BotInfo botInfo, BotUser user, String text) {
+        if (inArray(text, backButton, backButtonRu)) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), text, true);
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.choosePaymentType(user.getLang()), kyb.choosePaymentType(user.getLang()));
+            eventCode(user, "showBasket");
+            return;
+        }
+        if (isValidPhoneNumber(text)) {
+            user.setHelperPhone(text);
+            userService.save(user);
+            /*bot.sendMessage(botInfo .getId(), user.getChatId(), msg.choosePaymentType(user.getLang()), kyb.choosePaymentType(user.getLang()));*/
+            /// ///////////////////////////////////////////////////////////////////////////////////////
+            Cart cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
+            // Telefon raqami noto'g'ri formatda bo'lsa
+            List<CartItem> carts = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cart.getId());
+            Branch branch;
+            boolean isDelivery = false;
+            if (user.getDeliveryType().equals("delivery")) {
+                isDelivery = true;
+                branch = findNearestBranch(branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId()), user.getLatitude(), user.getLongitude());
+            } else {
+                Optional<Branch> bOp = branchRepository.findById(user.getBranchId());
+                if (bOp.isEmpty())
+                    return;
+                branch = bOp.get();
+            }
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.finishBasket(
+                    convertDto(carts),
+                    user.getLang(), cart.getId(), isDelivery ? null : user.getAddress(), user, branch
+            ), kyb.successOrCancel(user.getLang()));
+        } else {
+            if (inArray(text, "✅ Tasdiqlash", "✅ Подтверждение")) {
+                success(botInfo, user);
+                start(botInfo, user);
+                return;
+            }
+            if (inArray(text, "❌ Отмена", "❌ Bekor qilish")) {
+                handleCategory(botInfo, user, user.getLang().equals("uz") ? categoryService.findById(user.getCategoryId()).getData().getNameUz() : categoryService.findById(user.getCategoryId()).getData().getNameRu());
+                return;
+            }
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.invalidPhoneNumber(user.getPhone()), kyb.requestContact(user.getPhone(), user.getLang()));
+        }
+    }
+
+    private void success(BotInfo botInfo, BotUser user) {
+        Cart cart = cartRepository.findByStatusAndUserIdAndTypeAndActiveIsTrue(DRAFT, user.getId(), user.getDeliveryType());
+
+        List<BotUser> admins = new ArrayList<>();
+        for (Long adminChatId : botInfo.getAdminChatIds()) {
+            ResponseDto<BotUser> checkUser = userService.findByUserChatId(adminChatId, botInfo.getId());
+            if (checkUser.isSuccess()) admins.add(checkUser.getData());
+        }
+        List<CartItem> carts = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cart.getId());
+        for (BotUser admin : admins) {
+
+            Branch branch = findNearestBranch(branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId()), user.getLatitude(), user.getLongitude());
+
+            if (!user.getDeliveryType().equals("delivery")) {
+                Optional<Branch> bOp;
+                bOp = branchRepository.findById(user.getBranchId());
+                if (bOp.isEmpty())
+                    return;
+                bot.sendMessage(
+                        botInfo.getId(), admin.getChatId(),
+                        msg.basketForAdmin(convertDto(carts), user.getPaymentTypeUz(), user.getDeliveryType(), bOp.get(), user, cart.getId()),
+                        kyb.successBasket(cart.getId())
+                );
+
+            } else
+                bot.sendMessage(
+                        botInfo.getId(), admin.getChatId(),
+                        msg.basketForAdmin(convertDto(carts), user.getPaymentTypeUz(), user.getDeliveryType(), branch, user, cart.getId()),
+                        kyb.successBasket(cart.getId())
+                );
+            bot.sendVenue(botInfo.getId(), admin.getChatId(), user.getLatitude(), user.getLongitude(), new Json().setAddress(user.getLatitude(), user.getLongitude()).getAddress(), new Json().setAddress(user.getLatitude(), user.getLongitude()).getAddress());
+            bot.sendContact(botInfo.getId(), admin.getChatId(), user.getFirstname(), user.getLastname(), user.getPhone());
+        }
+
+        if (user.getDeliveryType().equals("pickup")) {
+            Optional<Branch> bOp;
+            bOp = branchRepository.findById(user.getBranchId());
+            if (bOp.isPresent()) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.finishBasket(convertDto(carts), user.getLang(), cart.getId(), user.getAddress(), user, !user.getDeliveryType().equals("pickup") ? null : bOp.get()));
+                if (bOp.get().getHasImage()) {
+                    ReplyKeyboardMarkup markup = null;
+                    bot.sendPhoto(botInfo.getId(), user.getChatId(), bOp.get().getImageUrl(), markup, true, msg.branchInformation(user.getLang(), bOp.get()));
+                } else
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), msg.branchInformation(user.getLang(), bOp.get()), true);
+                bot.sendVenue(botInfo.getId(), user.getChatId(), bOp.get().getLatitude(), bOp.get().getLongitude(), bOp.get().getName(), bOp.get().getAddress());
+            }
+        } else {
+            if (user.getDeliveryType().equals("delivery"))
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.finishBasket(convertDto(carts), user.getLang(), cart.getId(), user.getAddress(), user, null));
+        }
+        cart.setActive(true);
+        cart.setStatus(OPEN);
+        cart.setPaymentTypeRu(user.getPaymentTypeRu());
+        cart.setPaymentTypeUz(user.getPaymentTypeUz());
+        if (user.getDeliveryType().equals("delivery")) {
+            cart.setLon(user.getLatitude());
+            cart.setLon(user.getLongitude());
+            cart.setAddress(user.getAddress());
+            cart.setPhone(user.getHelperPhone());
+            cart.setUserId(user.getId());
+        } else {
+            cart.setBranchId(user.getBranchId());
+            cart.setPhone(user.getHelperPhone());
+            cart.setUserId(user.getId());
+        }
+        cartRepository.save(cart);
+    }
+
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        // O'zbekiston telefon raqami formati: +998 **********
+        String regex = "^\\+998\\d{9}$";
+        Pattern pattern = Pattern.compile(regex);
+        return pattern.matcher(phoneNumber).matches();
+    }
+
+    public void branchLists(BotInfo botInfo, BotUser user, String text) {
+        if (inArray(text, backButton, backButtonRu)) {
+            start(botInfo, user);
+        } else {
+            Branch branch = branchRepository.findByNameAndBotIdAndActiveIsTrue(text, botInfo.getId());
+            if (branch != null) {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.branchInformation(user.getLang(), branch));
+                bot.sendVenue(botInfo.getId(), user.getChatId(), branch.getLatitude(), branch.getLongitude(), branch.getName(), branch.getAddress());
+            } else {
+                wrongBtn(botInfo, user, kyb.chooseBranch(user.getLang(), branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId())));
+            }
+        }
+    }
+
+    public void branchLists(BotInfo botInfo, BotUser user, Location location) {
+        List<Branch> branches = branchRepository.findAllByActiveIsTrueAndStatusAndBotIdOrderByIdAsc(OPEN, botInfo.getId());
+        Branch branch = findNearestBranch(branches, location.getLatitude(), location.getLongitude());
+        double haversine = haversine(branch.getLatitude(), branch.getLongitude(), location.getLatitude(), location.getLongitude());
+        String s = formatDistance(haversine);
+
+        String message;
+        if (user.getLang().equals("uz")) {
+            message = "📍 Sizga eng yaqin filialimiz sizdan %s uzoqlikda:\n\n".formatted(s);
+        } else {
+            message = "📍 Ближайший к вам филиал находится на расстоянии %s:\n\n".formatted(s);
+        }
+
+        message = message.concat(msg.branchInformation(user.getLang(), branch));
+        bot.sendMessage(botInfo.getId(), user.getChatId(), message);
+        bot.sendVenue(botInfo.getId(), user.getChatId(), branch.getLatitude(), branch.getLongitude(), branch.getName(), branch.getAddress());
+    }
+
+    public void cancelOrder(BotInfo botInfo, BotUser user, String data, CallbackQuery callbackQuery, Integer messageId) {
+        Long cartId = Long.valueOf(data.split("_")[1]);
+        cartRepository.findById(cartId).ifPresent(cart -> {
+            cart.setStatus(FINISH);
+            cartRepository.save(cart);
+            List<CartItem> list = cartItemRepository.findAllByActiveIsTrueAndCartIdOrderById(cartId);
+            for (Long adminChatId : botInfo.getAdminChatIds()) {
+                if (cart.getType().equals("delivery")) {bot.sendMessage(botInfo.getId(), adminChatId, msg.cancelOrder(cart, convertDto(list), user , null));}
+                else bot.sendMessage(botInfo.getId(), adminChatId, msg.cancelOrder(cart, convertDto(list), user,branchRepository.findById(cart.getBranchId()).get()));
+            }
+            bot.alertMessage(botInfo.getId(), callbackQuery, msg.alertMsgForCancelOrder(user.getLang()));
+            bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+
+        });
+
     }
 }
