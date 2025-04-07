@@ -19,23 +19,32 @@ public class User {
     private String username;
     @Column(unique = true)
     private Long chatId;
-    private Integer page ;
+    private Integer page;
     private String phone;
     private String role;
     private String eventCode;
     private Long userId;
     private Long channelId;
     private String lang;
-    private String helperPhone ;
+    private String helperPhone;
     private String findUsername;
     private String findNickname;
     private Integer messageId;
     private String helperRole;
     private String helperBotType;
-/*
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Load> loads;
-*/
+    private Boolean forBotActive;
+    private Double balance;
+    private Long botPriceId;
+
+    private Boolean isNew;
+    /*
+        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+        private List<Load> loads;
+    */
     private Long loadId;
+    private Long botId;
+    private String queryText;
+
+    private Double helperBalance = 0.0;
 
 }

@@ -4,7 +4,7 @@ spring:
   application:
     name: example-bot
   datasource:
-    url: jdbc:postgresql://localhost:5432/localhostdb
+    url: jdbc:postgresql://localhost:5432/botmaker_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -21,4 +21,4 @@ bot:
 admin:
   chat:
     id: 7882316826
-size: 10
+size: 2

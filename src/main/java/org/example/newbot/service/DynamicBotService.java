@@ -142,45 +142,7 @@ public class DynamicBotService {
         }
     }
 
-    public String createAndRegisterBot(TelegramBotsApi botsApi, BotInfo botInfo, int messageId, Long chatId, String msg, TelegramBot bot1) {
-        try {
-            TelegramLongPollingBot bot = new TelegramLongPollingBot(botInfo.getBotToken()) {
-                @Override
-                public String getBotUsername() {
-                    // Avval saqlangan username ni qaytarish
-                    return findBotById(botInfo.getId())
-                            .map(BotInstance::getUsername)
-                            .orElseGet(() -> {
-                                bot1.editMessageText(chatId, messageId + 1, msg);
-                                String username = fetchBotUsername(this);
-                                if (username == null) {
-                                    return null;
-                                }
-                                log.info("Yangi username olingan: {}", username);
-                                botInfo.setBotUsername(username);
-                                botInfoRepository.save(botInfo);
-                                return username;
-                            });
-                }
 
-                @Override
-                public void onUpdateReceived(Update update) {
-                    handleUpdate(update, botInfo.getId());
-                }
-            };
-
-            // Bot username ni olish
-            String username = fetchBotUsername(bot);
-
-            BotSession session = botsApi.registerBot(bot);
-            activeBots.add(new BotInstance(botInfo.getId(), bot, session, username));
-            log.info("Bot qo'shildi: {} (@{})", botInfo.getId(), username);
-            return username;
-        } catch (Exception e) {
-            log.error("Bot yaratishda xato: {}", e.getMessage(), e);
-            return null;
-        }
-    }
 
     private String fetchBotUsername(TelegramLongPollingBot bot) {
         try {

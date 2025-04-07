@@ -172,12 +172,28 @@ public class StaticVariable {
     public static String[] botMakerAdminMenu = new String[]{
             "👥 Foydalanuvchilar", "🤖 Botlar",
             "📊 Statistika", "⚙️ Sozlamalar",
-            "📡 Kanallar", "📤 Chiqish"
+            "📡 Kanallar"
+    };
+    public static String[] settingsMenu = new String[]{
+            "🤖 Bot sozlamalar",
+            "💳 Karta sozlamalar",
+            backButton,
+            mainMenu
+    };
+    public static String[] userPageMenu = new String[]{
+            "👥 Barcha foydalanuvchilar", "🔍 Qidirish",
+            backButton, mainMenu
     };
     public static String[] botMakerAdminBotMenu = new String[]{
             "📋 Barcha botlar",
             "🔍 Qidirish",
             "➕ Bot qo'shish",
+            backButton,
+            mainMenu
+    };
+    public static String[] chooseTypeBotList = new String[]{
+            "✅ Aktiv botlar",
+            "⏸️ To'xtatilgan botlar",
             backButton,
             mainMenu
     };

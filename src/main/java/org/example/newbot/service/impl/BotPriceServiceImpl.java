@@ -9,6 +9,7 @@ import org.example.newbot.service.BotPriceService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Log4j2
 @Service
@@ -20,12 +21,24 @@ public class BotPriceServiceImpl implements BotPriceService {
     }
 
     @Override
+    public ResponseDto<BotPrice> findById(Long botPriceId) {
+        try {
+            Optional<BotPrice> bOp = botPriceRepository.findById(botPriceId);
+            return bOp.map(botPrice -> new ResponseDto<>(true, "Ok", botPrice)).orElseGet(() -> new ResponseDto<>(false, "Not Found", null));
+        } catch (Exception e) {
+            log.error(e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+    }
+
+    @Override
     public ResponseDto<BotPrice> findByTypeText(String type) {
         try {
             BotPrice typeText = botPriceRepository.findByTypeText(type);
             if (typeText != null) {
-                return new ResponseDto<>(true , "Ok", typeText);
-            }return  new ResponseDto<>(false , "Not found");
+                return new ResponseDto<>(true, "Ok", typeText);
+            }
+            return new ResponseDto<>(false, "Not found");
         } catch (Exception e) {
             log.error(e);
             return new ResponseDto<>(false, e.getMessage());

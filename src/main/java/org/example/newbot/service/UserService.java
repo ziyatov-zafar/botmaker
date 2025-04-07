@@ -15,4 +15,6 @@ public interface UserService {
     ResponseDto< Page<User>>findAllByUsername(String username, int page, int size);
     ResponseDto< Page<User>>findAllByNickname(String nickname, int page, int size);
     ResponseDto< Page<User>>findAllByRole(String role, int page, int size);
+
+    ResponseDto< Page<User>> searchUsers(String query, Integer page, int size);
 }

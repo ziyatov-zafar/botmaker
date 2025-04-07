@@ -8,4 +8,5 @@ import java.util.List;
 public interface BotPriceService {
     ResponseDto<List<BotPrice>>findAll();
     ResponseDto<BotPrice> findByTypeText(String type);
+    ResponseDto<BotPrice> findById(Long botPriceId);
 }

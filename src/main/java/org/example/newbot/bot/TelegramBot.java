@@ -13,6 +13,8 @@ import org.example.newbot.model.BotInfo;
 import org.example.newbot.model.BotUser;
 import org.example.newbot.model.User;
 import org.example.newbot.repository.BotInfoRepository;
+import org.example.newbot.repository.BotPriceRepository;
+import org.example.newbot.repository.PaymentRepository;
 import org.example.newbot.service.BotPriceService;
 import org.example.newbot.service.DynamicBotService;
 import org.example.newbot.service.UserService;
@@ -25,6 +27,7 @@ import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -54,6 +57,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final DynamicBotService dynamicBotService;
     private final TelegramBotsApi telegramBotsApi;
     private final BotInfoRepository botInfoRepository;
+    private final BotPriceRepository botPriceRepository;
+    private final PaymentRepository paymentRepository;
     @Value("${bot.token}")
     public String botToken;
     @Value("${bot.username}")
@@ -61,7 +66,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Value("${size}")
     public int size;
     @Value("${admin.chat.id}")
-    private Long superAdminChatId;
+    public Long superAdminChatId;
 
 
     @SneakyThrows
@@ -93,6 +98,9 @@ public class TelegramBot extends TelegramLongPollingBot {
             user.setChatId(chatId);
             user.setEventCode("aLOM");
             user.setRole("user");
+            user.setBalance(0.0);
+            user.setHelperBalance(0.0);
+            user.setPage(0);
         }
         user.setFirstname(firstname);
         user.setLastname(lastname);
@@ -104,7 +112,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             new RoleAdmin(new AdminFunction(
                     this, userService, adminKyb,
                     botPriceService, dynamicBotService,
-                    telegramBotsApi, botInfoRepository
+                    telegramBotsApi, botInfoRepository,
+                    botPriceRepository, paymentRepository
             )).menu(user, update);
         } else {
             user.setRole("user");
@@ -112,7 +121,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             if (role.equals("user")) {
                 new RoleUser(new UserFunction(
                         this, userService, userKyb,
-                        botPriceService
+                        botPriceService,dynamicBotService,
+                        telegramBotsApi,botInfoRepository
                 )).menu(user, update);
             } else return;
         }
@@ -230,6 +240,23 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(action);
         } catch (TelegramApiException e) {
+            log.error(e);
+        }
+    }
+
+    public void sendPhoto(Long chatId, String fileId, String caption, ReplyKeyboardMarkup markup) {
+        try {
+            execute(
+                    SendPhoto
+                            .builder()
+                            .chatId(chatId)
+                            .caption(caption)
+                            .photo(new InputFile(fileId))
+                            .parseMode("HTML")
+                            .replyMarkup(markup)
+                            .build()
+            );
+        } catch (Exception e) {
             log.error(e);
         }
     }

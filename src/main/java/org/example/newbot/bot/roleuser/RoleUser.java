@@ -30,6 +30,8 @@ public class RoleUser {
                         function.menu(user, text);
                     } else if (eventCode.equals("choose bot")) {
                         function.chooseBot(user, text);
+                    } else if (eventCode.equals("is buy bot")) {
+                        function.isBuyBot(user, text);
                     }
                 }
             }

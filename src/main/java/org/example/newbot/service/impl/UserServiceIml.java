@@ -87,6 +87,16 @@ public class UserServiceIml implements UserService {
     }
 
     @Override
+    public ResponseDto<Page<User>> searchUsers(String query, Integer page, int size) {
+        try {
+            return new ResponseDto<>(true , "Ok" , userRepository.searchUser(query, PageRequest.of(page, size)));
+        } catch (Exception e) {
+            log.error(e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+    }
+
+    @Override
     public ResponseDto<Page<User>> findAllByNickname(String nickname, int page, int size) {
         try {
             Page<User> userPage = userRepository.findByNicknameContainingIgnoreCaseOrderByIdDesc(nickname, PageRequest.of(page, size));
