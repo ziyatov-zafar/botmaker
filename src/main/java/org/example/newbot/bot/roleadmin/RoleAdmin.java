@@ -32,28 +32,51 @@ public class RoleAdmin {
                         case "add bot admin chat id" -> function.addBotAdminChatId(user, text);
                         case "search bots" -> function.searchBots(user, text);
                         case "user page", "addBalance" -> function.userPage(user, text);
-                        case "search users","addBalance1" -> function.searchUsers(user , text);
-                        case "settings menu" -> function.settingsMenu(user , text);
-                        case "edit bots menu" -> function.editBotsMenu(user  ,text);
-                        case "edit bot price" , "edit bot desc" ,"edit bot type" -> function.editBot(user  ,text,eventCode);
-                        case "edit card number" , "edit card img","edit card owner","edit card type" -> function.editCard(user,text,eventCode);
+                        case "search users", "addBalance1" -> function.searchUsers(user, text);
+                        case "settings menu" -> function.settingsMenu(user, text);
+                        case "edit bots menu" -> function.editBotsMenu(user, text);
+                        case "edit bot price", "edit bot desc", "edit bot type" ->
+                                function.editBot(user, text, eventCode);
+                        case "edit card number", "edit card img", "edit card owner", "edit card type" ->
+                                function.editCard(user, text, eventCode);
+                        case "channels menu" -> function.channelsMenu(user, text);
+                        case "get edit channel username", "get edit channel name" -> function.editChannel(user, text);
+                        case "is channel delete" -> function.isChannelDelete(user, text);
+                        case "get new channel name", "add new channel username", "is add channel" ->
+                                function.addChannel(user, text, eventCode);
+                        case "check" -> function.check(user , text);
+                        case "cancel check" -> function.cancelCheck(user , text);
+                        case "reply" -> function.reply(user , text);
                     }
                 }
             } else if (message.hasPhoto()) {
                 PhotoSize photo = message.getPhoto().get(message.getPhoto().size() - 1);
-                if (eventCode.equals("edit card img"))function.editCardImg(user , photo);
+                if (eventCode.equals("edit card img")) function.editCardImg(user, photo);
             }
         } else if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
             String data = callbackQuery.getData();
             Integer messageId = callbackQuery.getMessage().getMessageId();
+            boolean isReturn = data.startsWith("checkConfirm") || data.startsWith("checkCancelled");
+
+            if (isReturn) {
+                function.checkService(user, data, messageId, callbackQuery);
+                return;
+            }
+
+            isReturn = data.startsWith("reply_");
+
+            if (isReturn) {
+                function.reply(user , callbackQuery,messageId,data);
+                return;
+            }
             switch (eventCode) {
                 case "choose bot list type" -> function.chooseBotListType(user, data, callbackQuery, messageId, false);
                 case "search bots" -> function.searchBots(user, data, messageId, callbackQuery);
-                case "user page" -> function.userPage(user, data,messageId,callbackQuery);
-                case "addBalance" -> function.addBalance(user , data , messageId,callbackQuery);
-                case "addBalance1" -> function.addBalance1(user , data , messageId,callbackQuery);
-                case "search users" -> function.searchUsers(user , data,messageId,callbackQuery);
+                case "user page" -> function.userPage(user, data, messageId, callbackQuery);
+                case "addBalance" -> function.addBalance(user, data, messageId, callbackQuery);
+                case "addBalance1" -> function.addBalance1(user, data, messageId, callbackQuery);
+                case "search users" -> function.searchUsers(user, data, messageId, callbackQuery);
             }
         }
     }

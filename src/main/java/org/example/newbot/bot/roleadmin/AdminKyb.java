@@ -4,6 +4,7 @@ import org.example.newbot.bot.Kyb;
 import org.example.newbot.bot.StaticVariable;
 import org.example.newbot.model.BotInfo;
 import org.example.newbot.model.BotPrice;
+import org.example.newbot.model.Channel;
 import org.example.newbot.model.User;
 import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -110,10 +111,7 @@ public class AdminKyb extends Kyb {
     public InlineKeyboardMarkup crudBot(boolean active) {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> statusRow = new ArrayList<>();
-        statusRow.add(createButton(
-                active ? "🔴 To‘xtatish" : "🟢 Faollashtirish",
-                active ? "deactivate_bot" : "activate_bot"
-        ));
+        statusRow.add(createButton(active ? "🔴 To‘xtatish" : "🟢 Faollashtirish", active ? "deactivate_bot" : "activate_bot"));
         rows.add(statusRow);
         if (active) {
             List<InlineKeyboardButton> editDeleteRow = new ArrayList<>();
@@ -156,10 +154,7 @@ public class AdminKyb extends Kyb {
         }
 
         // Bloklash yoki blokdan chiqarish tugmasi
-        row.add(createButton(
-                active ? "🚫 Bloklash" : "✅ Blokdan chiqarish",
-                active ? "blockUser" : "unblockUser"
-        ));
+        row.add(createButton(active ? "🚫 Bloklash" : "✅ Blokdan chiqarish", active ? "blockUser" : "unblockUser"));
         rows.add(row);
         row = new ArrayList<>();
 
@@ -257,6 +252,39 @@ public class AdminKyb extends Kyb {
         row = new KeyboardRow();
         row.add("👤 Karta egasi");
         row.add("🖼️ Karta rasmi");
+        rows.add(row);
+
+        return markup(addBackAndMainBtn(rows));
+    }
+
+
+    public ReplyKeyboardMarkup getChannels(List<Channel> channels) {
+        KeyboardRow row = new KeyboardRow();
+        List<KeyboardRow> rows = new ArrayList<>();
+        for (int i = 0; i < channels.size(); i++) {
+            row.add(channels.get(i).getName());
+            if ((i + 1) % 2 == 0) {
+                rows.add(row);
+                row = new KeyboardRow();
+            }
+        }
+        rows.add(row);
+        row = new KeyboardRow();
+        row.add(addChannel);
+        rows.add(row);
+        return markup(addBackAndMainBtn(rows));
+    }
+
+    public ReplyKeyboardMarkup crudChannel() {
+        KeyboardRow row = new KeyboardRow();
+        List<KeyboardRow> rows = new ArrayList<>();
+
+        row.add("✏️ Kanal nomini o‘zgartirish");
+        row.add("🔗 Kanal usernamesini o‘zgartirish");
+        rows.add(row);
+
+        row = new KeyboardRow();
+        row.add("🗑️ O‘chirish");
         rows.add(row);
 
         return markup(addBackAndMainBtn(rows));

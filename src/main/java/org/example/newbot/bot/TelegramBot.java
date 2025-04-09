@@ -1,5 +1,8 @@
 package org.example.newbot.bot;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.example.newbot.bot.roleadmin.AdminFunction;
@@ -11,15 +14,19 @@ import org.example.newbot.bot.roleuser.UserKyb;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.BotInfo;
 import org.example.newbot.model.BotUser;
+import org.example.newbot.model.Channel;
 import org.example.newbot.model.User;
 import org.example.newbot.repository.BotInfoRepository;
 import org.example.newbot.repository.BotPriceRepository;
+import org.example.newbot.repository.ChannelRepository;
 import org.example.newbot.repository.PaymentRepository;
 import org.example.newbot.service.BotPriceService;
 import org.example.newbot.service.DynamicBotService;
 import org.example.newbot.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.ActionType;
@@ -59,6 +66,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final BotInfoRepository botInfoRepository;
     private final BotPriceRepository botPriceRepository;
     private final PaymentRepository paymentRepository;
+    private final ChannelRepository channelRepository;
     @Value("${bot.token}")
     public String botToken;
     @Value("${bot.username}")
@@ -113,7 +121,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                     this, userService, adminKyb,
                     botPriceService, dynamicBotService,
                     telegramBotsApi, botInfoRepository,
-                    botPriceRepository, paymentRepository
+                    botPriceRepository, paymentRepository,
+                    channelRepository
             )).menu(user, update);
         } else {
             user.setRole("user");
@@ -121,8 +130,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             if (role.equals("user")) {
                 new RoleUser(new UserFunction(
                         this, userService, userKyb,
-                        botPriceService,dynamicBotService,
-                        telegramBotsApi,botInfoRepository
+                        botPriceService, dynamicBotService,
+                        telegramBotsApi, botInfoRepository,
+                        channelRepository, botPriceRepository,
+                        paymentRepository
                 )).menu(user, update);
             } else return;
         }
@@ -151,6 +162,39 @@ public class TelegramBot extends TelegramLongPollingBot {
                         .parseMode(ParseMode.HTML)
                         .replyMarkup(markup)
                         .disableWebPagePreview(true)
+                        .build()
+        );
+    }
+
+    public void sendMessageToChannel(String username, String text, InlineKeyboardMarkup markup) {
+        try {
+            execute(
+                    SendMessage
+                            .builder()
+                            .chatId(username)
+                            .text(text)
+                            .parseMode(ParseMode.HTML)
+                            .replyMarkup(markup)
+                            .disableWebPagePreview(true)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
+
+    @SneakyThrows
+    public void sendMessage(Long chatId, String text, ReplyKeyboardMarkup markup, boolean protectContent) {
+        execute(
+                SendMessage
+                        .builder()
+                        .chatId(chatId)
+                        .text(text)
+                        .parseMode(ParseMode.HTML)
+                        .replyMarkup(markup)
+                        .disableWebPagePreview(true)
+                        .protectContent(protectContent)
                         .build()
         );
     }
@@ -185,14 +229,18 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @SneakyThrows
     public void alertMessage(CallbackQuery callbackQuery, String alertMessageText) {
+        try {
 
-        String callbackQueryId = callbackQuery.getId();
-        AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
-        answerCallbackQuery.setShowAlert(true);
-        answerCallbackQuery.setText(alertMessageText);
-        answerCallbackQuery.setCallbackQueryId(callbackQueryId);
+            String callbackQueryId = callbackQuery.getId();
+            AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
+            answerCallbackQuery.setShowAlert(true);
+            answerCallbackQuery.setText(alertMessageText);
+            answerCallbackQuery.setCallbackQueryId(callbackQueryId);
 
-        execute(answerCallbackQuery);
+            execute(answerCallbackQuery);
+        } catch (TelegramApiException e) {
+            log.error(e);
+        }
     }
 
     @SneakyThrows
@@ -258,6 +306,76 @@ public class TelegramBot extends TelegramLongPollingBot {
             );
         } catch (Exception e) {
             log.error(e);
+        }
+    }
+
+    public void sendPhoto(Long chatId, String fileId, String caption) {
+        try {
+            execute(
+                    SendPhoto
+                            .builder()
+                            .chatId(chatId)
+                            .caption(caption)
+                            .photo(new InputFile(fileId))
+                            .parseMode("HTML")
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
+    public void sendPhoto(Long chatId, String fileId, String caption, InlineKeyboardMarkup markup) {
+        try {
+            execute(
+                    SendPhoto
+                            .builder()
+                            .chatId(chatId)
+                            .caption(caption)
+                            .photo(new InputFile(fileId))
+                            .parseMode("HTML")
+                            .replyMarkup(markup)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
+    private boolean inArray(String s, String[] a) {
+        for (String string : a) {
+            if (string.equals(s)) return true;
+        }
+        return false;
+    }
+
+    public List<Channel> getChannels(long chatId) {
+        List<Channel> list = channelRepository.findAllByActiveIsTrueAndStatusOrderByIdAsc(Status.OPEN);
+        List<Channel> channels = new ArrayList<>(list.size());
+        String[] types = {"member", "creator", "administrator"};
+        for (Channel channel : list) {
+            if (!inArray(getChatMember(channel.getUsername(), chatId), types)) {
+                channels.add(channel);
+            }
+        }
+        return channels;
+    }
+
+    public String getChatMember(String chatId, long userId) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = "https://api.telegram.org/bot" + botToken + "/getChatMember" + "?chat_id=" + chatId + "&user_id=" + userId;
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(response.getBody());
+            if (rootNode.path("ok").asBoolean()) {
+                return rootNode.path("result").path("status").asText();
+            } else {
+                return "error";
+            }
+        } catch (Exception e) {
+            log.error(e);
+            return "error";
         }
     }
 }

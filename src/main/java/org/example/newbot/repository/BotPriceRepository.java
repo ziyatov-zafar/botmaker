@@ -8,4 +8,5 @@ import java.util.List;
 public interface BotPriceRepository extends JpaRepository<BotPrice, Long> {
     List<BotPrice> findAllByActiveIsTrueAndStatus(String status);
     BotPrice findByTypeText(String typeText);
+    BotPrice findByType(String type);
 }

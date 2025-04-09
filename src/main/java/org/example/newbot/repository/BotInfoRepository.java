@@ -26,4 +26,5 @@ public interface BotInfoRepository extends JpaRepository<BotInfo, Long> {
             "ORDER BY b.id DESC")
     Page<BotInfo> searchBot(@Param("query") String query, Pageable pageable);
 
+    List<BotInfo>findAllByActiveIsTrueOrderByIdAsc();
 }

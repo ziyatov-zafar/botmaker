@@ -92,7 +92,7 @@ public class AdminOnlineMagazineKyb extends Kyb {
             row.add(button);
             rows.add(row);
             row = new KeyboardRow();
-            return setbackAndMenuBtn(rows, row);
+            return setbackAndMenuBtn(rows);
         }
         for (int i = 0; i < categories.size(); i++) {
             button = new KeyboardButton(categories.get(i).getNameUz());
@@ -108,10 +108,12 @@ public class AdminOnlineMagazineKyb extends Kyb {
         row.add(button);
         rows.add(row);
         row = new KeyboardRow();
-        return setbackAndMenuBtn(rows, row);
+        return setbackAndMenuBtn(rows);
     }
 
-    public static ReplyKeyboardMarkup setbackAndMenuBtn(List<KeyboardRow> rows, KeyboardRow row) {
+    public static ReplyKeyboardMarkup setbackAndMenuBtn(List<KeyboardRow> rows) {
+        KeyboardRow row = new KeyboardRow();
+
         KeyboardButton button;
         button = new KeyboardButton(backButton);
         row.add(button);
@@ -314,8 +316,6 @@ public class AdminOnlineMagazineKyb extends Kyb {
 
         return new InlineKeyboardMarkup(rows);
     }
-
-
     public InlineKeyboardMarkup cancelBtn(String lang, Long cartId) {
         List<InlineKeyboardButton> row = new ArrayList<>();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();

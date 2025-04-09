@@ -23,17 +23,20 @@ public class StaticVariable {
     public static String mainMenu = "\uD83C\uDFE0 Asosiy menyu";
     public static String mainMenuRu = "\uD83C\uDFE0 Главное меню";
     public static final String addCategory = "➕ Kategoriya qo'shish";
+    public static final String addChannel = "➕ Kanal qo'shish";
     public static final String addProduct = "🛒 Mahsulot qo'shish";
     public static final String adminTelegramProfile = "@Me_MRX";
 
 
-    public static String aboutBotPrice(BotPrice botPrice, Boolean isAdmin) {
-        String formattedPrice = NumberFormat.getInstance().format(botPrice.getPrice());
+    public static String aboutBotPrice(BotPrice botPrice, Boolean isAdmin,double balance) {
+        String formattedPrice = formatPrice(botPrice.getPrice());
         StringBuilder response = new StringBuilder();
         if (!isAdmin) {
-            response.append("<b>🌟 Bot Narxi:</b> ").append(formattedPrice).append(" So'm\n")
-                    .append("<b>💡 Tur:</b> ").append(botPrice.getTypeText()).append("\n")
-                    .append("<b>📝 Vazifasi:</b> ").append(botPrice.getDescription()).append("\n\n");
+            response.append("<b>🌟 Bot Narxi:</b> ").append(formattedPrice)
+                    .append("\n<b>💡 Tur:</b> ").append(botPrice.getTypeText()).append("\n")
+                    .append("<b>📝 Vazifasi:</b> ").append(botPrice.getDescription()).append("\n\n")
+                    .append("<b>💰 Sizning hisobingiz: </b> ").append(formatPrice(balance));
+
         } else {
             response.append("<b>🌟 Bot Narxi:</b> ").append(formattedPrice).append(" So'm\n")
                     .append("<b>💡 Tur: </b> ").append(botPrice.getType()).append("\n")

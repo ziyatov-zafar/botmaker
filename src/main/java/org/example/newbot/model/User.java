@@ -24,7 +24,7 @@ public class User {
     private String role;
     private String eventCode;
     private Long userId;
-    private Long channelId;
+    private Integer channelId;
     private String lang;
     private String helperPhone;
     private String findUsername;
@@ -46,5 +46,6 @@ public class User {
     private String queryText;
 
     private Double helperBalance = 0.0;
+    private Long helperChatId;
 
 }

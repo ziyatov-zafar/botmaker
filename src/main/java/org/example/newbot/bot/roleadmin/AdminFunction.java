@@ -3,11 +3,13 @@ package org.example.newbot.bot.roleadmin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.example.newbot.bot.StaticVariable;
+import org.example.newbot.bot.Status;
 import org.example.newbot.bot.TelegramBot;
 import org.example.newbot.dto.ResponseDto;
 import org.example.newbot.model.*;
 import org.example.newbot.repository.BotInfoRepository;
 import org.example.newbot.repository.BotPriceRepository;
+import org.example.newbot.repository.ChannelRepository;
 import org.example.newbot.repository.PaymentRepository;
 import org.example.newbot.service.BotPriceService;
 import org.example.newbot.service.DynamicBotService;
@@ -16,13 +18,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
-import java.text.NumberFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -43,6 +42,7 @@ public class AdminFunction {
     private final BotInfoRepository botInfoRepository;
     private final BotPriceRepository botPriceRepository;
     private final PaymentRepository paymentRepository;
+    private final ChannelRepository channelRepository;
 
     public void start(User user) {
         String welcomeMessage = "🏠 Asosiy menyuga xush kelibsiz, " + user.getNickname() + "!\n\n"
@@ -71,7 +71,8 @@ public class AdminFunction {
             bot.sendMessage(user.getChatId(), "😊 Quyidagi menyulardan birini tanlang:", kyb.settingsMenu);
             eventCode(user, "settings menu");
         } else if (text.equals(botMakerAdminMenu[4])) {
-
+            bot.sendMessage(user.getChatId(), "\uD83D\uDCCB Sizning barcha kanallaringiz ro'yxati quyidagicha:", kyb.getChannels(channelRepository.findAllByActiveIsTrueAndStatusOrderByIdAsc(Status.OPEN)));
+            eventCode(user, "channels menu");
         } else if (text.equals(backButton)) {
             start(user);
         } else wrongBtn(user, kyb.menu);
@@ -735,7 +736,7 @@ public class AdminFunction {
             bot.sendMessage(user.getChatId(), "Yangi karta egasini ismini kiriting\n\nAvvalgi karta egasining ismi: <code>%s</code>".formatted(card().getOwner()), kyb.backBtn);
             eventCode(user, "edit card owner");
         } else if (text.equals("🖼️ Karta rasmi")) {
-            bot.sendPhoto(user.getChatId(), card().getImg(), null, null);
+            bot.sendPhoto(user.getChatId(), card().getImg(), null);
             bot.sendMessage(user.getChatId(), "Yangi karta rasmini kiriting\n\nAvvalgi karta rasmi tepada", kyb.backBtn);
             eventCode(user, "edit card img");
         } else wrongBtn(user, kyb.settingsMenu);
@@ -921,4 +922,245 @@ public class AdminFunction {
         eventCode(user, "settings menu");
         settingsMenu(user, settingsMenu[1]);
     }
+
+    public void channelsMenu(User user, String text) {
+        if (text.equals(backButton)) start(user);
+        else if (text.equals(addChannel)) {
+            bot.sendMessage(
+                    user.getChatId(),
+                    "📢 Iltimos, qo‘shmoqchi bo‘lgan kanalingiz nomini kiriting:",
+                    kyb.backBtn
+            );
+            eventCode(user, "get new channel name");
+        } else if (text.equals("✏️ Kanal nomini o‘zgartirish")) {
+            Channel channel = channel(user);
+            bot.sendMessage(user.getChatId(), "Yangi kanal nomini kiriting, eski nomi : <code>" + channel.getName() + "</code>", kyb.backBtn);
+            eventCode(user, "get edit channel name");
+        } else if (text.equals("🔗 Kanal usernamesini o‘zgartirish")) {
+            Channel channel = channel(user);
+            bot.sendMessage(user.getChatId(), "Yangi kanal usernamesini kiriting, eski nomi : <code>" + channel.getUsername() + "</code>", kyb.backBtn, true);
+            eventCode(user, "get edit channel username");
+        } else if (text.equals("🗑️ O‘chirish")) {
+            Channel channel = channel(user);
+            bot.sendMessage(user.getChatId(), "\uD83D\uDCE2 *Kanal nomi:* %s\n\uD83D\uDD17 *Username:* %s\n\nHaqiqatdan ham ushbu kanalni o'chirmoqchimisiz ⬇️".formatted(channel.getName(), channel.getUsername()), kyb.isSuccess("uz"));
+            eventCode(user, "is channel delete");
+        } else {
+            Channel channel = channelRepository.findByNameAndActiveIsTrue(text);
+            if (channel == null) {
+                errorBtn(user.getChatId(), kyb.getChannels(channelRepository.findAllByActiveIsTrueAndStatusOrderByIdAsc(Status.OPEN)));
+            } else {
+                user.setChannelId(channel.getId());
+                userService.save(user);
+                bot.sendMessage(user.getChatId(), "\uD83D\uDCE2 *Kanal nomi:* %s\n\uD83D\uDD17 *Username:* %s\n\nQuyidagi amallardan birini tanlang ⬇️".formatted(channel.getName(), channel.getUsername()), kyb.crudChannel());
+            }
+        }
+    }
+
+    private Channel channel(User user) {
+        return channelRepository.findById(user.getChannelId()).orElse(null);
+    }
+
+    public void editChannel(User user, String text) {
+        if (text.equals(backButton)) {
+            channelsMenu(user, channel(user).getName());
+            eventCode(user, "channels menu");
+        } else {
+            Channel channel = channel(user);
+            String msg;
+            if (user.getEventCode().equals("get edit channel name")) {
+                channel.setName(text);
+                try {
+                    channelRepository.save(channel);
+                } catch (Exception e) {
+                    bot.sendMessage(
+                            user.getChatId(),
+                            "❗️Bu nom allaqachon mavjud. Iltimos, boshqa nom kiriting.",
+                            kyb.backBtn
+                    );
+                    return;
+                }
+                msg = "✅ Kanal nomi muvaffaqiyatli o'zgartirildi!";
+            } else if (user.getEventCode().equals("get edit channel username")) {
+                if (text.charAt(0) == '@') {
+                    bot.sendMessage(
+                            user.getChatId(),
+                            "❌ Siz usernamesini noto‘g‘ri formatda kiritdingiz.\n\nIltimos, kanal usernamesini quyidagi tartibda kiriting:\n\n📌 Agar kanal usernamesi @username ko‘rinishida bo‘lsa, faqat `username` qismini kiriting.",
+                            kyb.backBtn
+                    );
+                    return;
+                }
+                channel.setUsername("@" + text);
+                channel.setLink("https://t.me/" + text);
+                channelRepository.save(channel);
+                msg = "✅ Kanal usernamsi muvaffaqiyatli o'zgartirildi!";
+            } else return;
+            bot.sendMessage(user.getChatId(), msg);
+            channelsMenu(user, channel(user).getName());
+        }
+    }
+
+    public void isChannelDelete(User user, String text) {
+        if (text.equals("❌ Yo'q")) {
+            bot.sendMessage(user.getChatId(), "Operatsiya bekor qilindi ❗");
+            channelsMenu(user, channel(user).getName());
+            eventCode(user, "channels menu");
+        } else if (text.equals("✅ Ha")) {
+            Channel channel = channel(user);
+            channel.setActive(false);
+            channel.setStatus(Status.DRAFT);
+            channel.setName(UUID.randomUUID().toString() + channel.getId());
+            channel.setUsername(UUID.randomUUID().toString() + channel.getId());
+            channelRepository.save(channel);
+            bot.sendMessage(user.getChatId(), "Kanalingiz muvaffaqiyatli o'chirildi ✅");
+            menu(user, botMakerAdminMenu[4]);
+        } else {
+            wrongBtn(user, kyb.isSuccess("uz"));
+        }
+    }
+
+    public void addChannel(User user, String text, String eventCode) {
+        if (text.equals(backButton)) {
+            menu(user, botMakerAdminMenu[4]);
+        } else {
+            String msg;
+            ReplyKeyboardMarkup markup = null;
+            boolean isFinished = false;
+            Channel channel = channelRepository.getDraft();
+            if (channel == null) {
+                channel = new Channel();
+                channel.setActive(false);
+                channel.setStatus(Status.DRAFT);
+            }
+
+            switch (eventCode) {
+                case "get new channel name" -> {
+                    channel.setName(text);
+                    try {
+                        channelRepository.save(channel);
+                        msg = "Muvaffaqiyatli saqlandi, endi ushbu kanal usernamesini kiriting";
+                        eventCode = "add new channel username";
+                    } catch (Exception e) {
+                        log.error(e);
+                        msg = "Bu nom band, iltimos boshqa nom kiriting";
+                    }
+                }
+                case "add new channel username" -> {
+                    if (text.charAt(0) == '@') {
+                        msg = "Username noto'g'ri formatda kiritdingiz, misol uchun @kanal_username si korinishda bolsa kanal_username deb kiritishingiz kerak";
+                    } else {
+                        channel.setUsername("@" + text);
+                        channel.setLink("https://t.me/" + text);
+                        channelRepository.save(channel);
+                        msg = "Muvaffaqiyatli saqlandi, \n\nKanal nomi: %s\nKanal usernamesi: @%s\n\nushbu kanalni haqiqatdan ham qo'shmoqchimisiz".formatted(channel.getName(), channel.getUsername());
+                        eventCode = "is add channel";
+                        markup = kyb.isSuccess("uz");
+                    }
+                }
+                case "is add channel" -> {
+                    if (text.equals("✅ Ha")) {
+                        channel.setStatus(Status.OPEN);
+                        channel.setActive(true);
+                        channelRepository.save(channel);
+                        msg = "Muvaffaqoyatli qo'shildi";
+                    } else if (text.equals("❌ Yo'q")) {
+                        msg = "Operatsiya bekor qilindi o'chirildi!";
+                    } else return;
+                    isFinished = true;
+                }
+                default -> {
+                    return;
+                }
+            }
+            /// ///
+            bot.sendMessage(user.getChatId(), msg, markup);
+            eventCode(user, eventCode);
+            if (isFinished) {
+                menu(user, botMakerAdminMenu[4]);
+            }
+        }
+    }
+
+    public void checkService(User user, String data, Integer messageId, CallbackQuery callbackQuery) {
+        Long chatId = Long.valueOf(data.split("_")[1]);
+        user.setHelperChatId(chatId);
+        User currentUser = userService.checkUser(chatId).getData();
+        userService.save(user);
+
+        if (data.startsWith("checkConfirm")) {
+            bot.sendMessage(user.getChatId(), "💵 Balans miqdorini kiriting:", true);
+            eventCode(user, "check");
+        } else {
+            bot.sendMessage(user.getChatId(), "❌ Sababini kiriting:", true);
+            eventCode(user, "cancel check");
+        }
+    }
+
+
+    public void check(User user, String text) {
+        if (text.equals(backButton)) {
+            start(user);
+            return;
+        }
+
+        Long chatId = user.getHelperChatId();
+        User currentUser = userService.checkUser(chatId).getData();
+        double balance = Double.parseDouble(text);
+
+        // Balansni yangilash
+        currentUser.setBalance(currentUser.getBalance() == null ? balance : currentUser.getBalance() + balance);
+        userService.save(currentUser);
+
+        // Foydalanuvchiga xabar yuborish
+        bot.sendMessage(chatId, "💸 Sizning hisobingizga %s qo'shildi\n\n📊 Umumiy balansingiz: %s ga yetdi".formatted(formatPrice(balance), formatPrice(currentUser.getBalance())));
+
+        // Admin yoki boshqa foydalanuvchiga xabar yuborish
+        bot.sendMessage(user.getChatId(), "📈 Ushbu foydalanuvchining umumiy balansi: %s ga yetdi".formatted(formatPrice(currentUser.getBalance())), kyb.backBtn);
+    }
+
+
+    public void cancelCheck(User user, String text) {
+        if (text.equals(backButton)) {
+            start(user);
+            return;
+        }
+
+        Long chatId = user.getHelperChatId();
+
+        // Foydalanuvchiga xabar yuborish
+        bot.sendMessage(chatId, "❌ Chekingiz qabul qilinmadi\n\nBuning sabab: %s".formatted(text));
+
+        // Admin yoki boshqa foydalanuvchiga xabar yuborish
+        bot.sendMessage(user.getChatId(), "✅ Foydalanuvchiga ushbu xabar yuborildi\n\n❌ Chekingiz qabul qilinmadi\n\nBuning sabab: %s".formatted(text), kyb.backBtn);
+    }
+
+    public void reply(User user, CallbackQuery callbackQuery, Integer messageId, String data) {
+        Long chatId = Long.valueOf(data.split("_")[1]);
+        user.setHelperChatId(chatId);
+        userService.save(user);
+        bot.sendMessage(user.getChatId(), "✍️ Iltimos, javobingizni yozing:", kyb.setKeyboards(new String[]{backButton},1));
+        eventCode(user, "reply");
+    }
+
+    public void reply(User user, String text) {
+        // Foydalanuvchiga admin javobi
+        if (text.equals(backButton)) {
+            start(user);
+            return;
+        }
+        bot.sendMessage(
+                user.getHelperChatId(),
+                "📬 <b>Admindan sizga javob keldi:</b>\n\n<i>" + text + "</i>",
+                kyb.replyBtn(user.getChatId(), "uz")
+        );
+
+        // Adminga tasdiq xabari
+        bot.sendMessage(
+                user.getChatId(),
+                "✅ Xabaringiz foydalanuvchiga muvaffaqiyatli yetkazildi!",
+                kyb.menu
+        );
+
+        eventCode(user, "menu");
+    }
+
 }
