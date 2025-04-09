@@ -2,6 +2,13 @@ package org.example.newbot.service;
 
 import lombok.extern.log4j.Log4j2;
 import org.example.newbot.bot.TelegramBot;
+import org.example.newbot.bot.online_course_bot.OnlineCourseBot;
+import org.example.newbot.bot.online_course_bot.admin.AdminFunction;
+import org.example.newbot.bot.online_course_bot.admin.AdminKyb;
+import org.example.newbot.bot.online_course_bot.admin.AdminMsg;
+import org.example.newbot.bot.online_course_bot.user.UserFunction;
+import org.example.newbot.bot.online_course_bot.user.UserKyb;
+import org.example.newbot.bot.online_course_bot.user.UserMsg;
 import org.example.newbot.bot.online_magazine_bot.admin.AdminOnlineMagazineFunction;
 import org.example.newbot.bot.online_magazine_bot.OnlineMagazineBot;
 import org.example.newbot.bot.online_magazine_bot.admin.AdminOnlineMagazineKyb;
@@ -143,7 +150,6 @@ public class DynamicBotService {
     }
 
 
-
     private String fetchBotUsername(TelegramLongPollingBot bot) {
         try {
             GetMe getMe = new GetMe();
@@ -181,16 +187,26 @@ public class DynamicBotService {
                     botUserService, new AdminOnlineMagazineFunction(
                     botInfoRepository, botUserService, this,
                     new AdminOnlineMagazineKyb(), categoryService,
-                    productService, productVariantService,branchRepository,cartRepository,cartItemRepository
+                    productService, productVariantService, branchRepository, cartRepository, cartItemRepository
             ), new UserOnlineMagazineFunction(
                     botUserService, this, new UserOnlineMagazineKyb(),
                     categoryService, productService, productVariantService,
-                    new UserOnlineMagazineMsg(),locationRepository,
-                    branchRepository,cartRepository,cartItemRepository
-            ),branchRepository);
+                    new UserOnlineMagazineMsg(), locationRepository,
+                    branchRepository, cartRepository, cartItemRepository
+            ), branchRepository);
             onlineMagazineBot.onlineMagazineBotMenu(botInfo, chatId, update, adminChatId);
-        } else if (botInfo.getType().equals("logistic-bot")) {
-            sendMessage(botId, chatId, "online logistik xush kelibsiz");
+        } else if (botInfo.getType().equals("online-course")) {
+            new OnlineCourseBot(
+                    this, botInfoRepository, botUserService,
+                    new AdminFunction(
+                            botInfoRepository, botUserService, this,
+                            new AdminKyb(), new AdminMsg()
+                    ),
+                    new UserFunction(
+                            botInfoRepository, botUserService,
+                            this, new UserKyb(), new UserMsg()
+                    )
+            ).onlineCourseBotMenu(botInfo, chatId, update, adminChatId);
         } else return;
     }
 
@@ -198,7 +214,7 @@ public class DynamicBotService {
         Optional<BotInstance> botInstance = findBotById(botId);
         if (botInstance.isEmpty()) {
             log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
-            return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s}".formatted(botId));
+            return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s".formatted(botId));
         }
         try {
             SendMessage message = new SendMessage();
@@ -213,6 +229,7 @@ public class DynamicBotService {
             return new ResponseDto<>(false, e.getMessage());
         }
     }
+
     public ResponseDto<Void> sendVenue(Long botId, Long chatId, Double latitude, Double longitude, String title, String address) {
         Optional<BotInstance> botInstance = findBotById(botId);
         if (botInstance.isEmpty()) {
@@ -236,6 +253,7 @@ public class DynamicBotService {
             return new ResponseDto<>(false, e.getMessage());
         }
     }
+
     public ResponseDto<Void> sendMessage(Long botId, Long chatId, String text, boolean b) {
         Optional<BotInstance> botInstance = findBotById(botId);
         if (botInstance.isEmpty()) {
@@ -274,6 +292,7 @@ public class DynamicBotService {
             log.error(e.getMessage());
         }
     }
+
     public ResponseDto<Void> sendMessage(Long botId, Long chatId, String text, ReplyKeyboardMarkup markup) {
         Optional<BotInstance> botInstance = findBotById(botId);
         if (botInstance.isEmpty()) {
@@ -403,8 +422,6 @@ public class DynamicBotService {
             botInstance.get().getBot().execute(answer);
 
 
-
-
             return new ResponseDto<>(true, "Ogohlantirish xabari muvaffaqiyatli yuborildi");
 
         } catch (TelegramApiException e) {
@@ -506,7 +523,8 @@ public class DynamicBotService {
             return new ResponseDto<>(false, e.getMessage());
         }
     }
-    public ResponseDto<Void> sendPhoto(Long botId, Long chatId, boolean protectContent, String caption,String imgUrl) {
+
+    public ResponseDto<Void> sendPhoto(Long botId, Long chatId, boolean protectContent, String caption, String imgUrl) {
         Optional<BotInstance> botInstance = findBotById(botId);
         if (botInstance.isEmpty()) {
             log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);

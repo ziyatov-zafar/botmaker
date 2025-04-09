@@ -5,21 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8c8ccb28-d810-4f4f-95e5-059e5dfc90ca" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseBot.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseConstVariables.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminFunction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminKyb.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminMsg.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserFunction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserKyb.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserMsg.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/StaticVariable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/StaticVariable.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/TelegramBot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/TelegramBot.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/roleadmin/AdminFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/roleadmin/AdminFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/roleadmin/RoleAdmin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/roleadmin/RoleAdmin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/roleuser/UserFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/roleuser/UserFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/StaticVariable.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/StaticVariable.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/TelegramBot.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/TelegramBot.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/roleadmin/AdminFunction.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/roleadmin/AdminFunction.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/roleadmin/RoleAdmin.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/roleadmin/RoleAdmin.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/roleuser/UserFunction.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/roleuser/UserFunction.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/model/User.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/config/DynamicBotConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/config/DynamicBotConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/config/DynamicBotConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/config/DynamicBotConfig.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,7 +133,7 @@
       <workItem from="1743824127199" duration="33132000" />
       <workItem from="1743914395479" duration="26474000" />
       <workItem from="1743996201248" duration="34772000" />
-      <workItem from="1744167607513" duration="31801000" />
+      <workItem from="1744167607513" duration="36914000" />
     </task>
     <servers />
   </component>

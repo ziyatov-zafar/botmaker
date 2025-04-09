@@ -47,6 +47,19 @@ public class DynamicBotConfig {
         botPrice.setTypeText("Onlayn dokon");
         botPriceRepository.save(botPrice);
 
+
+        botPrice = new BotPrice();
+        botPrice.setDescription("Online kurs uchun bot, vazifasi kurslarni online tarzda sotish uchun imkoniyat yaratib beradi");
+        botPrice.setActive(true);
+        botPrice.setPrice(2000000D);
+        botPrice.setStatus("open");
+        botPrice.setType("online-course");
+        botPrice.setTypeText("Onlayn kurs");
+        botPriceRepository.save(botPrice);
+
+
+
+
         updatePayment(paymentRepository);
 
         return args -> {
