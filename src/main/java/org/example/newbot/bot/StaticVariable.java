@@ -175,7 +175,7 @@ public class StaticVariable {
     public static String[] botMakerAdminMenu = new String[]{
             "👥 Foydalanuvchilar", "🤖 Botlar",
             "📊 Statistika", "⚙️ Sozlamalar",
-            "📡 Kanallar"
+            "📡 Kanallar" , "\uD835\uDDE5\uD835\uDDF2\uD835\uDDF8\uD835\uDDF9\uD835\uDDEE\uD835\uDDFA\uD835\uDDEE"
     };
     public static String[] settingsMenu = new String[]{
             "🤖 Bot sozlamalar",

@@ -66,19 +66,29 @@ public class UserFunction extends Function {
 
             // Xabar matnini tayyorlash
             String welcomeMessage;
+            List<Channel> channels = channelRepository.findAllByActiveIsTrueAndStatusOrderByIdAsc(Status.OPEN);
+            String u = "";
+            for (Channel channel : channels) {
+                u = u.concat(channel.getUsername() + " ");
+            }
             if (user.getIsNew()) {
+
                 welcomeMessage = """
-                        🖐 Salom hurmatli %s. « %s » ga xush kelibsiz
+                        🖐 Assalomu alaykum, hurmatli <b>%s</b>!
+                        🤖 <b>%s</b> botiga xush kelibsiz.
                         
-                        Super Maker Bot | Konstruktor sizga telegram tarmog'ida 
-                        mukammal telegram bot yaratish imkoniyatini beradi.
-                        """.formatted(user.getNickname(), bot.getBotUsername());
+                        📢 Yangiliklardan xabardor bo‘lish uchun bizni kuzatib boring:
+                        👉 %s
+                        """.formatted(user.getNickname(), bot.getBotUsername(), u);
                 user.setIsNew(false);
                 userService.save(user);
             } else {
                 welcomeMessage = """
+                        
                         O'zingizga kerakli menyulardan birini tanlang
-                        """;
+                        
+                        📢 Yangiliklardan xabardor bo‘lish uchun bizni kuzatib boring:
+                        👉 %s""".formatted(u);
             }
 
             // Xabarni yuborish
@@ -449,7 +459,7 @@ public class UserFunction extends Function {
         Long chatId = Long.valueOf(data.split("_")[1]);
         user.setHelperChatId(chatId);
         userService.save(user);
-        bot.alertMessage(callbackQuery , "✍️ Iltimos, javobingizni yozing:");
+        bot.alertMessage(callbackQuery, "✍️ Iltimos, javobingizni yozing:");
         bot.sendMessage(user.getChatId(), "✍️ Iltimos, javobingizni yozing:", kyb.setKeyboards(new String[]{backButton}, 1));
         eventCode(user, "reply");
     }
@@ -466,7 +476,7 @@ public class UserFunction extends Function {
                     user.getChatId(),
                     """
                             ✅ Murojaatingiz yuborildi.
-                              
+                            
                             Tez orada javob qaytaramiz!""",
                     kyb.menu()
             );

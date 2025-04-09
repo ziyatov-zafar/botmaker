@@ -31,6 +31,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.meta.api.methods.CopyMessage;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -377,5 +378,17 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error(e);
             return "error";
         }
+    }
+
+    @SneakyThrows
+    public void copyMessage(Long userChatId, Long fromChatId, Integer messageId, InlineKeyboardMarkup markup) {
+        execute(CopyMessage
+                .builder()
+                .chatId(userChatId)
+                .fromChatId(fromChatId)
+                .messageId(messageId)
+                .replyMarkup(markup)
+                .build());
+
     }
 }

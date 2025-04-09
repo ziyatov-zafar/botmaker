@@ -35,6 +35,7 @@ public class User {
     private Boolean forBotActive;
     private Double balance;
     private Long botPriceId;
+    private Boolean hasReply;
 
     private Boolean isNew;
     /*

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.time.ZoneId;
@@ -73,6 +74,13 @@ public class AdminFunction {
         } else if (text.equals(botMakerAdminMenu[4])) {
             bot.sendMessage(user.getChatId(), "\uD83D\uDCCB Sizning barcha kanallaringiz ro'yxati quyidagicha:", kyb.getChannels(channelRepository.findAllByActiveIsTrueAndStatusOrderByIdAsc(Status.OPEN)));
             eventCode(user, "channels menu");
+        } else if (text.equals(botMakerAdminMenu[5])) {
+            bot.sendMessage(
+                    user.getChatId(),
+                    "📢 Iltimos, reklamangiz matnini yuboring:",
+                    kyb.setKeyboards(new String[]{backButton}, 1)
+            );
+            eventCode(user, "reklama");
         } else if (text.equals(backButton)) {
             start(user);
         } else wrongBtn(user, kyb.menu);
@@ -594,6 +602,9 @@ public class AdminFunction {
             userService.save(currentUser);
             bot.alertMessage(callbackQuery, "✅ Muvaffaqiyatli qo‘shildi!");
             bot.editMessageText(user.getChatId(), messageId, aboutUser(currentUser), kyb.userCrud(currentUser.getRole().equals("user")));
+            bot.sendMessage(currentUser.getChatId(), ("\uD83D\uDCB8 Sizning hisobingizga %s qo'shildi\n" +
+                    "\n" +
+                    "\uD83D\uDCCA Umumiy balansingiz: %s so‘m ga yetdi").formatted(formatPrice(balance), formatPrice(currentUser.getBalance())));
             eventCode(user, "user page");
             return;
         } else if (data.equals("cancel")) {
@@ -698,6 +709,10 @@ public class AdminFunction {
             userService.save(currentUser);
             bot.alertMessage(callbackQuery, "✅ Muvaffaqiyatli qo‘shildi!");
             bot.editMessageText(user.getChatId(), messageId, aboutUser(currentUser), kyb.userCrud(currentUser.getRole().equals("user")));
+            bot.sendMessage(currentUser.getChatId(), ("\uD83D\uDCB8 Sizning hisobingizga %s qo'shildi\n" +
+                    "\n" +
+                    "\uD83D\uDCCA Umumiy balansingiz: %s so‘m ga yetdi").formatted(formatPrice(balance), formatPrice(currentUser.getBalance())));
+
             eventCode(user, "search users");
             return;
         } else if (data.equals("cancel")) {
@@ -1137,7 +1152,7 @@ public class AdminFunction {
         Long chatId = Long.valueOf(data.split("_")[1]);
         user.setHelperChatId(chatId);
         userService.save(user);
-        bot.sendMessage(user.getChatId(), "✍️ Iltimos, javobingizni yozing:", kyb.setKeyboards(new String[]{backButton},1));
+        bot.sendMessage(user.getChatId(), "✍️ Iltimos, javobingizni yozing:", kyb.setKeyboards(new String[]{backButton}, 1));
         eventCode(user, "reply");
     }
 
@@ -1163,4 +1178,36 @@ public class AdminFunction {
         eventCode(user, "menu");
     }
 
+    public void reklama(User user, Integer messageId) {
+        user.setMessageId(messageId);
+        user.setEventCode("user has reply");
+        bot.sendMessage(user.getChatId(), "Ushbu reklamaga javob yozish imkoniyati qo'shilsinmi ?", kyb.isSuccess("uz"));
+        userService.save(user);
+    }
+
+    public void userHasReply(User user, String text) {
+        boolean hasReply;
+        if (text.equals("✅ Ha")) {
+            hasReply = true;
+        } else if (text.equals("❌ Yo'q")) {
+            hasReply = false;
+        } else return;
+        List<User> users = userService.findAll().getData();
+        long count = 0;
+        for (User u : users) {
+            try {
+                InlineKeyboardMarkup markup = kyb.replyBtn(user.getChatId(), "uz");
+                bot.copyMessage(u.getChatId(), user.getChatId(), user.getMessageId(), hasReply ? markup : null);
+                count++;
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        bot.sendMessage(
+                user.getChatId(),
+                "📨 Sizning xabaringiz <b>%d</b> kishiga yuborildi.\n✅ Ulardan <b>%d</b> nafari muvaffaqiyatli qabul qildi."
+                        .formatted(users.size(), count)
+        );
+        start(user);
+    }
 }

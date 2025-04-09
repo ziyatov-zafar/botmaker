@@ -7,6 +7,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import static org.example.newbot.bot.StaticVariable.backButton;
+
 public class RoleAdmin {
     private final AdminFunction function;
 
@@ -18,8 +20,15 @@ public class RoleAdmin {
         String eventCode = user.getEventCode();
         if (update.hasMessage()) {
             Message message = update.getMessage();
+            if (eventCode.equals("reklama")) {
+                if (message.getText().equals("/start") || message.getText().equals(StaticVariable.mainMenu) || message.getText().equals(backButton)) {
+                    function.start(user);
+                    return;
+                }else function.reklama(user , message.getMessageId());
+            }
             if (message.hasText()) {
                 String text = message.getText();
+
                 if (text.equals("/start") || text.equals(StaticVariable.mainMenu)) {
                     function.start(user);
                 } else {
@@ -47,6 +56,7 @@ public class RoleAdmin {
                         case "check" -> function.check(user , text);
                         case "cancel check" -> function.cancelCheck(user , text);
                         case "reply" -> function.reply(user , text);
+                        case "user has reply" -> function.userHasReply(user , text);
                     }
                 }
             } else if (message.hasPhoto()) {
