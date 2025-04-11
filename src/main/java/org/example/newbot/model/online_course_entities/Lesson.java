@@ -19,4 +19,5 @@ public class Lesson {
     private Boolean hasHomework;
     private String status;
     private Boolean active;
+    private Boolean free;
 }

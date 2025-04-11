@@ -5,7 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8c8ccb28-d810-4f4f-95e5-059e5dfc90ca" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/CourseRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseBot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseBot.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseConstVariables.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseConstVariables.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminFunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminKyb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminKyb.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminMsg.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminMsg.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/BotUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/BotUser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/online_course_entities/Course.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/online_course_entities/Course.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/online_course_entities/Lesson.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/online_course_entities/Lesson.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,8 +28,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -38,33 +51,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.NewbotApplication.executor&quot;: &quot;Run&quot;,
-    &quot;extract.method.default.visibility&quot;: &quot;private&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Farobiy students/Desktop/zafar projectsa/main projects/botmaker&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.NewbotApplication.executor": "Run",
+    "extract.method.default.visibility": "private",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Farobiy students/Desktop/zafar projectsa/add git for put to server/sdaDFSADFSAD",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;postgresql&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="org.example.newbot.repository" />
@@ -121,6 +134,7 @@
       <workItem from="1743996201248" duration="34772000" />
       <workItem from="1744167607513" duration="37433000" />
       <workItem from="1744253790934" duration="350000" />
+      <workItem from="1744355052180" duration="12287000" />
     </task>
     <servers />
   </component>

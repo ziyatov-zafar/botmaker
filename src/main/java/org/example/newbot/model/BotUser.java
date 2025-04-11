@@ -48,4 +48,5 @@ public class BotUser {
     private Integer count;
 
     private Long cartId;
+    private Long courseId;
 }

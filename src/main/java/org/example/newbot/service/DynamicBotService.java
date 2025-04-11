@@ -60,6 +60,7 @@ public class DynamicBotService {
     private final BranchRepository branchRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final CourseRepository courseRepository;
 
     @Value("${size}")
     public int size;
@@ -67,7 +68,7 @@ public class DynamicBotService {
     public Long adminChatId;
 
 
-    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService, LocationRepository locationRepository, BranchRepository branchRepository, CartRepository cartRepository, CartItemRepository cartItemRepository) {
+    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService, LocationRepository locationRepository, BranchRepository branchRepository, CartRepository cartRepository, CartItemRepository cartItemRepository, CourseRepository courseRepository) {
         this.botInfoRepository = botInfoRepository;
         this.botUserService = botUserService;
         this.categoryService = categoryService;
@@ -77,6 +78,7 @@ public class DynamicBotService {
         this.branchRepository = branchRepository;
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
+        this.courseRepository = courseRepository;
     }
 
 
@@ -200,7 +202,7 @@ public class DynamicBotService {
                     this, botInfoRepository, botUserService,
                     new AdminFunction(
                             botInfoRepository, botUserService, this,
-                            new AdminKyb(), new AdminMsg()
+                            new AdminKyb(), new AdminMsg(),courseRepository
                     ),
                     new UserFunction(
                             botInfoRepository, botUserService,

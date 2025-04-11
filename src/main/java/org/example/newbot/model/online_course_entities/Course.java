@@ -12,13 +12,15 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Long BotId;//qaysi botga tegishliligi
+    private String description;
+    private Long botId;//qaysi botga tegishliligi
     private String groupLink;
     private Boolean hasGroup;
     private Boolean active;
     private String status;
     @Column(columnDefinition = "TEXT")
-    private String description;
     private String teacherUrl;
     private Boolean hasTeacher;
+    private Double price;
+
 }

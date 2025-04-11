@@ -19,6 +19,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.example.newbot.bot.online_course_bot.OnlineCourseConstVariables.mainBtn;
+
 @Log4j2
 @RequiredArgsConstructor
 public class OnlineCourseBot {
@@ -81,11 +83,15 @@ public class OnlineCourseBot {
                 Message message = update.getMessage();
                 if (message.hasText()) {
                     String text = message.getText();
-                    if (text.equals("/start")) {
+                    if (text.equals("/start") || text.equals(mainBtn)) {
                         adminFunction.start(botInfo, user);
                     } else {
-                        if (eventCode.equals("menu")) {
-                            adminFunction.menu(user , text);
+                        switch (eventCode) {
+                            case "menu" -> adminFunction.menu(botInfo, user, text);
+                            case "course menu" -> adminFunction.courseMenu(botInfo, user, text);
+                            case "addCourseName", "addNewCourseDescription", "addNewCoursePrice",
+                                 "addCourseNewGroupLink", "addCourseNewTeacherLink", "isAddCourse" ->
+                                    adminFunction.addCourse(botInfo, user, text, eventCode);
                         }
                     }
                 }
