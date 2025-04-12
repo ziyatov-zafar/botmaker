@@ -61,6 +61,8 @@ public class DynamicBotService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final CourseRepository courseRepository;
+    private final LessonRepository lessonRepository;
+    private final LessonVideoRepository lessonVideoRepository;
 
     @Value("${size}")
     public int size;
@@ -68,7 +70,7 @@ public class DynamicBotService {
     public Long adminChatId;
 
 
-    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService, LocationRepository locationRepository, BranchRepository branchRepository, CartRepository cartRepository, CartItemRepository cartItemRepository, CourseRepository courseRepository) {
+    public DynamicBotService(BotInfoRepository botInfoRepository, BotUserService botUserService, CategoryService categoryService, ProductService productService, ProductVariantService productVariantService, LocationRepository locationRepository, BranchRepository branchRepository, CartRepository cartRepository, CartItemRepository cartItemRepository, CourseRepository courseRepository, LessonRepository lessonRepository, LessonVideoRepository lessonVideoRepository) {
         this.botInfoRepository = botInfoRepository;
         this.botUserService = botUserService;
         this.categoryService = categoryService;
@@ -79,6 +81,8 @@ public class DynamicBotService {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.courseRepository = courseRepository;
+        this.lessonRepository = lessonRepository;
+        this.lessonVideoRepository = lessonVideoRepository;
     }
 
 
@@ -202,7 +206,8 @@ public class DynamicBotService {
                     this, botInfoRepository, botUserService,
                     new AdminFunction(
                             botInfoRepository, botUserService, this,
-                            new AdminKyb(), new AdminMsg(),courseRepository
+                            new AdminKyb(), new AdminMsg(),courseRepository,
+                            lessonRepository,lessonVideoRepository
                     ),
                     new UserFunction(
                             botInfoRepository, botUserService,
@@ -308,7 +313,31 @@ public class DynamicBotService {
             message.setChatId(chatId.toString());
             message.setText(text);
             message.setReplyMarkup(markup);
+            message.setDisableWebPagePreview(true);
             message.enableHtml(true);
+            botInstance.get().getBot().execute(message);
+            return new ResponseDto<>(true, "Ok");
+        } catch (TelegramApiException e) {
+            log.error("Xabar yuborishda xato. Bot ID: {}, Chat ID: {}. Xato: {}",
+                    botId, chatId, e.getMessage(), e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+    }
+    public ResponseDto<Void> sendVideo(Long botId, Long chatId, String fileId, ReplyKeyboardMarkup markup,boolean protectContent) {
+        Optional<BotInstance> botInstance = findBotById(botId);
+        if (botInstance.isEmpty()) {
+            log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
+            return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s}".formatted(botId));
+        }
+
+        try {
+
+            SendVideo message = new SendVideo();
+            message.setChatId(chatId.toString());
+            message.setVideo(new InputFile(fileId));
+            message.setReplyMarkup(markup);
+            message.setProtectContent(protectContent);
+            message.setParseMode("html");
             botInstance.get().getBot().execute(message);
             return new ResponseDto<>(true, "Ok");
         } catch (TelegramApiException e) {

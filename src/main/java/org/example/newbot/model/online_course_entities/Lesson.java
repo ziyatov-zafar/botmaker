@@ -13,7 +13,6 @@ public class Lesson {
     @Column(columnDefinition = "TEXT")
     private String description;
     private Long courseId;
-    private String videoUrl;
     @Column(columnDefinition = "TEXT")
     private String homework;
     private Boolean hasHomework;

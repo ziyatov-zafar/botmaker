@@ -9,11 +9,17 @@ public class OnlineCourseConstVariables {
             "📢 *Xabar yuborish*",
             "⚙️ *Sozlamalar*"};
     public static final String backBtn = "🔙 Orqaga";
+    public static final String toBackBtn = "🔙 Orqaga qaytish";
     public static final String mainBtn = "🏠 Asosiy menyu";
     public static final String addCourse = "➕ Kurs qo‘shish";
+    public static final String addLesson = "➕ Dars qo‘shish";
     public static final String viewCourseLessons = "📚 Darslar ro‘yxati";
+    public static final String viewLessonVideos = "\uD83D\uDCF9 Videolar ro‘yxati";
+    public static final String addVideo = "\uD83D\uDCF9 Video qo'shish";
     public static final String editCourse = "✏️ Kursni tahrirlash";
+    public static final String editLesson = "✏️ Darsni tahrirlash";
     public static final String deleteCourse = "🗑 Kursni o‘chirish";
+    public static final String deleteLesson = "🗑 Darsni o‘chirish";
     public static final String confirm = "✅ Tasdiqlash";
     public static final String cancel = "❌ Bekor qilish";
     public static final String leaveBtn = "\uD83D\uDEAB Tashlab ketish";
@@ -22,6 +28,12 @@ public class OnlineCourseConstVariables {
             editCourse,
             deleteCourse,
             viewCourseLessons
+    };
+    public static final String[] lessonCrudBtn = {
+            addLesson,
+            editLesson,
+            deleteLesson,
+            viewLessonVideos
     };
     public static final String[] editCourseBtn = {
             "✏️ Kurs nomini o'zgartirish",
@@ -32,7 +44,6 @@ public class OnlineCourseConstVariables {
             "❌ Guruhni olib tashlash",
             "➕ O'qituvchi qo'shish",
             "👨‍🏫 O'qituvchini o'zgartirish",
-            "❌ O'qituvchini olib tashlash",
-            "🏠 Asosiy menyu"
+            "❌ O'qituvchini olib tashlash"
     };
 }

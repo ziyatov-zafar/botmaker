@@ -49,4 +49,5 @@ public class BotUser {
 
     private Long cartId;
     private Long courseId;
+    private Long lessonId;
 }

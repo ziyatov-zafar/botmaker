@@ -92,8 +92,23 @@ public class OnlineCourseBot {
                             case "addCourseName", "addNewCourseDescription", "addNewCoursePrice",
                                  "addCourseNewGroupLink", "addCourseNewTeacherLink", "isAddCourse" ->
                                     adminFunction.addCourse(botInfo, user, text, eventCode);
+                            case "about course" -> adminFunction.aboutCourse(botInfo, user, text);
+                            case "editCourse" -> adminFunction.editCourse(botInfo, user, text);
+                            case "editCourseName", "editCourseDescription", "editCoursePrice",
+                                 "editCourseGroup", "editCourseTeacher" ->
+                                    adminFunction.editCourseInformation(botInfo, user, text);
+                            case "viewCourseLessons" -> adminFunction.viewCourseLessons(botInfo, user, text);
+                            case "get new lesson name", "get new lesson desc", "get new lesson video",
+                                 "is present video", "get new lesson homework", "get new lesson is free",
+                                 "is add lesson" -> adminFunction.addLesson(botInfo, user, message);
+                            case "lessonCrud" -> adminFunction.lessonCrud(botInfo, user, text);
                         }
                     }
+                } else if (message.hasVideo()) {
+                    if (eventCode.equals("get new lesson video")) {
+                        adminFunction.addLesson(botInfo, user, message);
+                    }
+
                 }
             } else if (update.hasCallbackQuery()) {
                 CallbackQuery callbackQuery = update.getCallbackQuery();
