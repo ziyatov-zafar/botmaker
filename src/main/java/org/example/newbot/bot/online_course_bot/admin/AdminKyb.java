@@ -2,9 +2,9 @@ package org.example.newbot.bot.online_course_bot.admin;
 
 import org.example.newbot.bot.*;
 import org.example.newbot.bot.online_course_bot.OnlineCourseConstVariables;
-import org.example.newbot.bot.online_course_bot.OnlineCourseConstVariables.*;
 import org.example.newbot.model.online_course_entities.Course;
 import org.example.newbot.model.online_course_entities.Lesson;
+import org.example.newbot.model.online_course_entities.LessonVideo;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -21,6 +21,7 @@ public class AdminKyb extends Kyb {
     public ReplyKeyboardMarkup isSuccessDelete = setKeyboards(new String[]{confirm, cancel}, 2);
     public ReplyKeyboardMarkup isSuccess = setKeyboards(new String[]{confirm, cancel}, 2);
     public ReplyKeyboardMarkup toBack = setKeyboards(new String[]{toBackBtn}, 1);
+    public ReplyKeyboardMarkup addVideoBtn = setKeyboards(new String[]{addVideo, toBackBtn}, 1);
 
     public ReplyKeyboardMarkup courseList(List<Course> courses, boolean empty) {
         if (empty) {
@@ -201,4 +202,63 @@ public class AdminKyb extends Kyb {
         rows.add(row);
         return addBackAndMainBtn(rows);
     }
+
+    public ReplyKeyboardMarkup editLessonKyb(Boolean isOpen) {
+        KeyboardRow row = new KeyboardRow();
+        List<KeyboardRow> rows = new ArrayList<>();
+        for (int i = 0; i < editLessonBtn(isOpen).length; i++) {
+            row.add(editLessonBtn(isOpen)[i]);
+            if ((i + 1) % 2 == 0) {
+                rows.add(row);
+                row = new KeyboardRow();
+            }
+        }
+        rows.add(row);
+        return addBackAndMainBtn(rows);
+    }
+
+    public InlineKeyboardMarkup deleteVideoBtn(){
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+
+        row.add(createButton("🗑️ O'chirish", "delete_video"));
+        rows.add(row);
+        row = new ArrayList<>();
+        row.add(createButton(toBackBtn, "to back"));
+        rows.add(row);
+        return new InlineKeyboardMarkup(rows);
+    }
+
+    public InlineKeyboardMarkup setVideos(List<LessonVideo> videos, Long videoId) {
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+
+        if (videos.size() == 1) {
+            row.add(createButton("🗑️ O'chirish", "delete_video"));
+            rows.add(row);
+            /*row = new ArrayList<>();
+            row.add(createButton(toBackBtn,"to back"));
+            rows.add(row);*/
+            return new InlineKeyboardMarkup(rows);
+        }
+        for (int i = 0; i < videos.size(); i++) {
+            LessonVideo video = videos.get(i);
+            String buttonText = (video.getId().equals(videoId) ? "✅ " : "") + (i + 1);
+            String callbackData = "video_" + video.getId();
+
+            row.add(createButton(buttonText, callbackData));
+
+            if ((i + 1) % 3 == 0) {
+                rows.add(row);
+                row = new ArrayList<>();
+            }
+        }
+
+        if (!row.isEmpty()) {
+            rows.add(row);
+        }
+
+        return new InlineKeyboardMarkup(rows);
+    }
+
 }

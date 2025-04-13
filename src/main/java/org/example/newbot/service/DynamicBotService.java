@@ -36,6 +36,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaVideo;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
@@ -206,8 +207,8 @@ public class DynamicBotService {
                     this, botInfoRepository, botUserService,
                     new AdminFunction(
                             botInfoRepository, botUserService, this,
-                            new AdminKyb(), new AdminMsg(),courseRepository,
-                            lessonRepository,lessonVideoRepository
+                            new AdminKyb(), new AdminMsg(), courseRepository,
+                            lessonRepository, lessonVideoRepository
                     ),
                     new UserFunction(
                             botInfoRepository, botUserService,
@@ -323,7 +324,32 @@ public class DynamicBotService {
             return new ResponseDto<>(false, e.getMessage());
         }
     }
-    public ResponseDto<Void> sendVideo(Long botId, Long chatId, String fileId, ReplyKeyboardMarkup markup,boolean protectContent) {
+
+    public ResponseDto<Void> sendVideo(Long botId, Long chatId, String fileId, ReplyKeyboardMarkup markup, boolean protectContent) {
+        Optional<BotInstance> botInstance = findBotById(botId);
+        if (botInstance.isEmpty()) {
+            log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
+            return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s}".formatted(botId));
+        }
+
+        try {
+
+            SendVideo message = new SendVideo();
+            message.setChatId(chatId.toString());
+            message.setVideo(new InputFile(fileId));
+            message.setReplyMarkup(markup);
+            message.setProtectContent(protectContent);
+            message.setParseMode("html");
+            botInstance.get().getBot().execute(message);
+            return new ResponseDto<>(true, "Ok");
+        } catch (TelegramApiException e) {
+            log.error("Xabar yuborishda xato. Bot ID: {}, Chat ID: {}. Xato: {}",
+                    botId, chatId, e.getMessage(), e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+    }
+
+    public ResponseDto<Void> sendVideo(Long botId, Long chatId, String fileId, InlineKeyboardMarkup markup, boolean protectContent) {
         Optional<BotInstance> botInstance = findBotById(botId);
         if (botInstance.isEmpty()) {
             log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
@@ -589,6 +615,30 @@ public class DynamicBotService {
             message.setMessageId(messageId);
             InputMediaPhoto mediaPhoto = new InputMediaPhoto();
             mediaPhoto.setMedia(photoId);
+            mediaPhoto.setCaption(caption);
+            mediaPhoto.setParseMode(ParseMode.HTML);
+            message.setMedia(mediaPhoto);
+            message.setReplyMarkup(markup);
+            botInstance.get().getBot().execute(message);
+            return new ResponseDto<>(true, "Ok");
+        } catch (TelegramApiException e) {
+            log.error("Xabar yuborishda xato. Bot ID: {}, Chat ID: {}. Xato: {}",
+                    botId, chatId, e.getMessage(), e);
+            return new ResponseDto<>(false, e.getMessage());
+        }
+    }
+    public ResponseDto<Void> editMessageVideo(Long botId, Long chatId, Integer messageId, InlineKeyboardMarkup markup, String caption, String video) {
+        Optional<BotInstance> botInstance = findBotById(botId);
+        if (botInstance.isEmpty()) {
+            log.warn("Bot topilmadi, xabar yuborish imkonsiz. Bot ID: {}", botId);
+            return new ResponseDto<>(false, "Bot topilmadi, xabar yuborish imkonsiz. Bot ID: %s".formatted(botId));
+        }
+        try {
+            EditMessageMedia message = new EditMessageMedia();
+            message.setChatId(chatId.toString());
+            message.setMessageId(messageId);
+            InputMediaVideo mediaPhoto = new InputMediaVideo();
+            mediaPhoto.setMedia(video);
             mediaPhoto.setCaption(caption);
             mediaPhoto.setParseMode(ParseMode.HTML);
             message.setMedia(mediaPhoto);

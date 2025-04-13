@@ -13,7 +13,7 @@ spring:
       ddl-auto: update
     show-sql: true
 server:
-  port: 8042
+  port: 8080
 
 bot:
   username: https://t.me/bot_maker_1_robot

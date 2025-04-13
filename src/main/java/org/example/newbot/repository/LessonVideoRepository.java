@@ -11,4 +11,6 @@ import java.util.List;
 public interface LessonVideoRepository extends JpaRepository<LessonVideo, Long> {
     @Query("select lv from LessonVideo lv where lv.lessonId=:lessonId and lv.active=true order by lv.id")
     List<LessonVideo> findByLessonId(@Param("lessonId") Long lessonId);
+    @Query("select lv from LessonVideo  lv where lv.id=:id")
+    LessonVideo getVideo(@Param("id") Long id);
 }

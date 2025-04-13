@@ -8,9 +8,6 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Table(name = "bot_users")
 public class BotUser {
     @Id
@@ -29,10 +26,11 @@ public class BotUser {
     private String role;
     private String paymentTypeRu;
     private String paymentTypeUz;
-    private Integer page=0;
+    private Integer page;
     private String eventCode;
     private String helperValue;
     @ManyToMany(mappedBy = "users",fetch = FetchType.EAGER)
+
     private List<BotInfo> bots;
     private Long botUserId;
     private Long categoryId;
@@ -50,4 +48,5 @@ public class BotUser {
     private Long cartId;
     private Long courseId;
     private Long lessonId;
+    private Long videoId;
 }

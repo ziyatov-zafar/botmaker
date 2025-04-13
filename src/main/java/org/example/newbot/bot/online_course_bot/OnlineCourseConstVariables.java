@@ -46,4 +46,21 @@ public class OnlineCourseConstVariables {
             "👨‍🏫 O'qituvchini o'zgartirish",
             "❌ O'qituvchini olib tashlash"
     };
+    public static String[] editLessonBtn(Boolean isOpen){
+        return new String[]{
+                "✏️ Dars nomini o'zgartirish",
+                "✏️ Dars tavsifini o'zgartirish",
+                "✏️ Uyga vazifani o'zgartirish",
+                isOpen ? "\uD83D\uDD12 Ushbu darsni yopiq qilish":"\uD83D\uDD13 Ushbu darsni ochiq qilish"
+        };
+    }
+    public static String questionEmoji = "❓";
+    //------------------------------------------------------------------------------------------------------
+    // user role
+    public static String[] userMenuBtn = {
+            "📚 Barcha mavjud kurslar",
+            "🎓 Mening kurslarim",
+            "💸 Yangi kurs sotib olish",
+            "🆘 Yordam / Aloqa"
+    };
 }

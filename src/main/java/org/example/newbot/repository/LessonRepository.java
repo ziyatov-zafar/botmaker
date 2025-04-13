@@ -14,4 +14,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     Lesson findLessonFromCourse(@Param("name") String name, @Param("courseId") Long courseId);
     @Query("select l from Lesson l where l.active=true and l.status='open' and l.courseId=:courseId order by l.id")
     List<Lesson> getLessonsOfCourse(@Param("courseId") Long courseId);
+
+    @Query("select l from Lesson  l where l.id = :lessonId")
+    Lesson getLesson(@Param("lessonId") Long lessonId);
 }

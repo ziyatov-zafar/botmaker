@@ -14,8 +14,10 @@ import org.example.newbot.repository.LessonRepository;
 import org.example.newbot.repository.LessonVideoRepository;
 import org.example.newbot.service.BotUserService;
 import org.example.newbot.service.DynamicBotService;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Video;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.util.ArrayList;
@@ -319,7 +321,6 @@ public class AdminFunction {
                 bot.sendMessage(botInfo.getId(), user.getChatId(), msg.wrongBtn, kyb.setLessons(lessons, lessons.isEmpty()));
                 return;
             }
-            //qilinmoqda
             bot.sendMessage(botInfo.getId(), user.getChatId(), msg.lessonInformation(lesson, course), kyb.lessonCrud());
             user.setLessonId(lesson.getId());
             user.setEventCode("lessonCrud");
@@ -363,10 +364,19 @@ public class AdminFunction {
                     lessonRepository.save(lesson);
                     bot.sendMessage(botInfo.getId(), user.getChatId(), msg.addedLessonDesc());
                     eventCode(user, "get new lesson video");
+                    List<LessonVideo> videos = lessonVideoRepository.findByLessonId(lesson.getId());
+                    for (LessonVideo video : videos) {
+                        video.setActive(false);
+                        try {
+                            lessonVideoRepository.save(video);
+                        } catch (Exception ignored) {
+                        }
+                    }
                 }
                 case "get new lesson video" -> bot.sendMessage(botInfo.getId(), user.getChatId(), msg.notVideo());
                 case "is present video" -> {
                     if (text.equals("✅ Ha")) {
+
                         bot.sendMessage(botInfo.getId(), user.getChatId(), msg.getVideoMsg(), true);
                         eventCode(user, "get new lesson video");
                     } else if (text.equals("❌ Yo'q")) {
@@ -379,8 +389,8 @@ public class AdminFunction {
                     if (!text.equals(leaveBtn)) {
                         lesson.setHasHomework(true);
                         lesson.setHomework(text);
-                        lessonRepository.save(lesson);
                     }
+                    lessonRepository.save(lesson);
                     bot.sendMessage(botInfo.getId(), user.getChatId(), msg.isOpen(), kyb.isSuccess("uz"));
                     eventCode(user, "get new lesson is free");
                 }
@@ -392,7 +402,8 @@ public class AdminFunction {
                     } else return;
                     lessonRepository.save(lesson);
                     for (LessonVideo lessonVideo : lessonVideoRepository.findByLessonId(lesson.getId())) {
-                        bot.sendVideo(botInfo.getId(), user.getChatId(), lessonVideo.getVideo(), null, false);
+                        ReplyKeyboardMarkup markup = null;
+                        bot.sendVideo(botInfo.getId(), user.getChatId(), lessonVideo.getVideo(), markup, false);
                     }
                     bot.sendMessage(botInfo.getId(), user.getChatId(), msg.isAddLessonMsg(lesson, course), kyb.isSuccess);
                     eventCode(user, "is add lesson");
@@ -428,18 +439,168 @@ public class AdminFunction {
     }
 
     public void lessonCrud(BotInfo botInfo, BotUser user, String text) {
+        Lesson lesson = lessonRepository.getLesson(user.getLessonId());
+        Course course = courseRepository.findCourse(lesson.getCourseId());
         switch (text) {
             case backBtn -> aboutCourse(botInfo, user, viewCourseLessons);
             case addLesson -> viewCourseLessons(botInfo, user, addLesson);
             case editLesson -> {
-                //nimadirlar qilinadi hali buyerga
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.editLessonKybPage(lesson, course), kyb.editLessonKyb(lesson.getFree()));
+                eventCode(user, "edit lesson for btn");
             }
-            case deleteLesson -> {
-                break;
+            case deleteLesson ->
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), msg.isDeleteLesson(lesson, course), kyb.isSuccessDelete);
+            case confirm -> {
+                lesson.setActive(false);
+                lesson.setName(UUID.randomUUID().toString() + lesson.getId());
+                lessonRepository.save(lesson);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.confirmLessonDelete);
+                aboutCourse(botInfo, user, viewCourseLessons);
+            }
+            case cancel -> {
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.cancelOperation);
+                viewCourseLessons(botInfo, user, lesson.getName());
             }
             case viewLessonVideos -> {
+                List<LessonVideo> videos = lessonVideoRepository.findByLessonId(lesson.getId());
+                LessonVideo video = videos.get(0);
+                InlineKeyboardMarkup markup = kyb.setVideos(videos, video.getId());
+                bot.sendMessage(botInfo.getId(), user.getChatId(), text, kyb.addVideoBtn);
+                bot.sendVideo(botInfo.getId(), user.getChatId(), video.getVideo(), markup, false);
+                user.setVideoId(video.getId());
+                user.setEventCode("get lesson videos");
+                botUserService.save(user);
+            }
+        }
+    }
+
+    public void editLessonForBtn(BotInfo botInfo, BotUser user, String text) {
+        Lesson lesson = lessonRepository.getLesson(user.getLessonId());
+        Course course = courseRepository.findCourse(lesson.getCourseId());
+        String[] buttons = editLessonBtn(lesson.getFree());
+        if (text.equals(buttons[0])) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.getEditLessonName(lesson), kyb.toBack);
+            eventCode(user, "edit lesson name");
+        } else if (text.equals(buttons[1])) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.getEditLessonDescription(lesson), kyb.toBack);
+            eventCode(user, "edit lesson desc");
+        } else if (text.equals(buttons[2])) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.getEditLessonHomework(lesson), kyb.toBack);
+            eventCode(user, "edit lesson homework");
+        } else if (text.equals(buttons[3])) {
+            lesson.setFree(!lesson.getFree());
+            lessonRepository.save(lesson);
+            bot.sendMessage(
+                    botInfo.getId(),
+                    user.getChatId(),
+                    "✅ Muvaffaqiyatli o'zgartirildi\n\n" + msg.editLessonKybPage(lesson, course),
+                    kyb.editLessonKyb(lesson.getFree())
+            );
+        } else if (text.equals(backBtn)) {
+            viewCourseLessons(botInfo, user, lesson.getName());
+        }
+    }
+
+    public void editLesson(BotInfo botInfo, BotUser user, String text) {
+        if (text.equals(toBackBtn)) {
+            lessonCrud(botInfo, user, editLesson);
+            return;
+        }
+        Lesson lesson = lessonRepository.getLesson(user.getLessonId());
+        Course course = courseRepository.findCourse(lesson.getCourseId());
+        String eventCode = user.getEventCode();
+        switch (eventCode) {
+            case "edit lesson name" -> {
+                Lesson checkLesson = lessonRepository.findLessonFromCourse(text, course.getId());
+                if (checkLesson != null) {
+                    bot.sendMessage(botInfo.getId(), user.getChatId(), msg.busyLessonName(course, text), kyb.toBack);
+                    return;
+                }
+                lesson.setName(text);
+                lessonRepository.save(lesson);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.savedLesson, kyb.toBack);
+            }
+            case "edit lesson desc" -> {
+                lesson.setDescription(text);
+                lessonRepository.save(lesson);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.savedLesson, kyb.toBack);
+            }
+            case "edit lesson homework" -> {
+                lesson.setHomework(text);
+                lessonRepository.save(lesson);
+                bot.sendMessage(botInfo.getId(), user.getChatId(), msg.savedLesson, kyb.toBack);
+            }
+            default -> {
                 return;
             }
         }
+        bot.sendMessage(botInfo.getId(), user.getChatId(), msg.editLessonKybPage(lesson, course), kyb.editLessonKyb(lesson.getFree()));
+        eventCode(user, "edit lesson for btn");
+    }
+
+    public void getLessonVideo(BotInfo botInfo, BotUser user, String text, Integer messageId) {
+        Lesson lesson = lessonRepository.getLesson(user.getLessonId());
+        Course course = courseRepository.findCourse(lesson.getCourseId());
+        if (text.equals(toBackBtn)) {
+            viewCourseLessons(botInfo, user, lesson.getName());
+        } else if (text.equals(addVideo)) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.addVideoMsg(lesson), kyb.toBack);
+            eventCode(user, "add video to lesson");
+        } else bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+    }
+
+    public void addVideoToLesson(BotInfo botInfo, BotUser user, String text, Integer messageId) {
+        if (text.equals(toBackBtn)) {
+            lessonCrud(botInfo, user, viewLessonVideos);
+        } else bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+    }
+
+    public void addVideoToLesson(BotInfo botInfo, BotUser user, Video video) {
+        Lesson lesson = lessonRepository.getLesson(user.getLessonId());
+        String fileId = video.getFileId();
+        List<LessonVideo> videos = lessonVideoRepository.findByLessonId(lesson.getId());
+        boolean duplicate = false;
+        for (LessonVideo lessonVideo : videos) {
+            if (fileId.equals(lessonVideo.getVideo())) {
+                duplicate = true;
+                break;
+            }
+        }
+        if (duplicate) {
+            bot.sendMessage(botInfo.getId(), user.getChatId(), msg.duplicateVideo(lesson), kyb.toBack);
+            return;
+        }
+        LessonVideo lessonVideo = new LessonVideo();
+        lessonVideo.setActive(true);
+        lessonVideo.setLessonId(lesson.getId());
+        lessonVideo.setVideo(fileId);
+        lessonVideoRepository.save(lessonVideo);
+        bot.sendMessage(user.getId(), user.getChatId(), msg.savedLessonVideo);
+        lessonCrud(botInfo, user, viewLessonVideos);
+    }
+
+    public void getLessonVideo(BotInfo botInfo, BotUser user, String data, int messageId, CallbackQuery callbackQuery) {
+        Lesson lesson = lessonRepository.getLesson(user.getLessonId());
+        List<LessonVideo> videos = lessonVideoRepository.findByLessonId(lesson.getId());
+        LessonVideo video = lessonVideoRepository.getVideo(user.getVideoId());
+        if (data.equals("delete_video")) {
+            if (videos.size() == 1) {
+                bot.alertMessage(botInfo.getId(), callbackQuery, msg.failedVideoDelete);
+            } else {
+                video.setActive(false);
+                lessonVideoRepository.save(video);
+                bot.alertMessage(botInfo.getId(), callbackQuery, msg.confirmVideoDelete);
+                bot.deleteMessage(botInfo.getId(), user.getChatId(), messageId);
+                lessonCrud(botInfo, user, viewLessonVideos);
+            }
+        } else if (data.startsWith("video")) {
+            video = lessonVideoRepository.getVideo(Long.parseLong(data.split("_")[1]));
+            bot.editMessageVideo(botInfo.getId(), user.getChatId(), messageId, kyb.deleteVideoBtn(), null, video.getVideo());
+            user.setVideoId(video.getId());
+            botUserService.save(user);
+        } else if (data.equals("to back")) {
+            bot.editCaption(botInfo.getId(), user.getChatId(), messageId, null, kyb.setVideos(videos, video.getId()));
+        }
+
     }
 }

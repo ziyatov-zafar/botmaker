@@ -102,20 +102,32 @@ public class OnlineCourseBot {
                                  "is present video", "get new lesson homework", "get new lesson is free",
                                  "is add lesson" -> adminFunction.addLesson(botInfo, user, message);
                             case "lessonCrud" -> adminFunction.lessonCrud(botInfo, user, text);
+                            case "edit lesson for btn" -> adminFunction.editLessonForBtn(botInfo, user, text);
+                            case "edit lesson name", "edit lesson desc", "edit lesson homework" ->
+                                    adminFunction.editLesson(botInfo, user, text);
+                            case "get lesson videos" ->
+                                    adminFunction.getLessonVideo(botInfo, user, text, message.getMessageId());
+                            case "add video to lesson" ->
+                                    adminFunction.addVideoToLesson(botInfo, user, text, message.getMessageId());
                         }
                     }
                 } else if (message.hasVideo()) {
-                    if (eventCode.equals("get new lesson video")) {
-                        adminFunction.addLesson(botInfo, user, message);
+
+                    switch (eventCode) {
+                        case "get new lesson video" -> adminFunction.addLesson(botInfo, user, message);
+                        case "add video to lesson" -> adminFunction.addVideoToLesson(botInfo, user, message.getVideo());
                     }
 
                 }
             } else if (update.hasCallbackQuery()) {
                 CallbackQuery callbackQuery = update.getCallbackQuery();
                 String data = callbackQuery.getData();
-                int messageId = Integer.parseInt(data);
+                int messageId = callbackQuery.getMessage().getMessageId();
+                if (eventCode.equals("get lesson videos"))
+                    adminFunction.getLessonVideo(botInfo, user, data, messageId, callbackQuery);
             }
         } else {
+
             if (update.hasMessage()) {
                 Message message = update.getMessage();
                 if (message.hasText()) {
@@ -123,7 +135,13 @@ public class OnlineCourseBot {
                     if (text.equals("/start")) {
                         userFunction.start(botInfo, user);
                     } else {
-
+                        if (eventCode.equals("requestContactForNewUser")) {
+                            userFunction.requestContactForNewUser(botInfo, user, message.getText());
+                        }
+                    }
+                } else if (message.hasContact()) {
+                    if (eventCode.equals("requestContactForNewUser")) {
+                        userFunction.requestContactForNewUser(botInfo, user, message.getContact());
                     }
                 }
             } else if (update.hasCallbackQuery()) {
@@ -131,6 +149,7 @@ public class OnlineCourseBot {
                 String data = callbackQuery.getData();
                 int messageId = Integer.parseInt(data);
             }
+
         }
     }
 }
