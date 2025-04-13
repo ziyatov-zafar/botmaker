@@ -127,7 +127,6 @@ public class OnlineCourseBot {
                     adminFunction.getLessonVideo(botInfo, user, data, messageId, callbackQuery);
             }
         } else {
-
             if (update.hasMessage()) {
                 Message message = update.getMessage();
                 if (message.hasText()) {
@@ -136,7 +135,9 @@ public class OnlineCourseBot {
                         userFunction.start(botInfo, user);
                     } else {
                         if (eventCode.equals("requestContactForNewUser")) {
-                            userFunction.requestContactForNewUser(botInfo, user, message.getText());
+                            userFunction.requestContactForNewUser(botInfo, user);
+                        } else if (eventCode.equals("menu")) {
+                            userFunction.menu(botInfo,user,text);
                         }
                     }
                 } else if (message.hasContact()) {

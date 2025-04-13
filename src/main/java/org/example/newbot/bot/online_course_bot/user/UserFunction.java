@@ -2,12 +2,19 @@ package org.example.newbot.bot.online_course_bot.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.example.newbot.bot.Status;
 import org.example.newbot.model.BotInfo;
 import org.example.newbot.model.BotUser;
+import org.example.newbot.model.online_course_entities.Course;
 import org.example.newbot.repository.BotInfoRepository;
+import org.example.newbot.repository.CourseRepository;
 import org.example.newbot.service.BotUserService;
 import org.example.newbot.service.DynamicBotService;
 import org.telegram.telegrambots.meta.api.objects.Contact;
+
+import java.util.List;
+
+import static org.example.newbot.bot.online_course_bot.OnlineCourseConstVariables.userMenuBtn;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -17,6 +24,7 @@ public class UserFunction {
     private final DynamicBotService bot;
     private final UserKyb kyb;
     private final UserMsg msg;/**/
+    private final CourseRepository courseRepository;
 
     private void eventCode(BotUser user, String eventCode) {
         user.setEventCode(eventCode);
@@ -38,7 +46,7 @@ public class UserFunction {
 
 
 
-    public void requestContactForNewUser(BotInfo botInfo, BotUser user, String text) {
+    public void requestContactForNewUser(BotInfo botInfo, BotUser user) {
         bot.sendMessage(botInfo.getId(), user.getChatId(), msg.wrongBtn, kyb.requestContact(msg.contactBtn));
     }
 
@@ -48,5 +56,12 @@ public class UserFunction {
         user.setPhone(phone);
         botUserService.save(user);
         start(botInfo, user,true);
+    }
+
+    public void menu(BotInfo botInfo, BotUser user, String text) {
+        List<Course> courses = courseRepository.findAllByActiveAndStatusAndBotIdOrderById(true, Status.OPEN, botInfo.getId());
+        if (text.equals(userMenuBtn[0])){
+            
+        }
     }
 }

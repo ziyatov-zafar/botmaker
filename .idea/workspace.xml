@@ -4,36 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8c8ccb28-d810-4f4f-95e5-059e5dfc90ca" name="Changes" comment="">
+    <list default="true" id="5d080122-9d66-4016-870a-f9f832d1de58" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/online_course_entities/CourseCart.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/CourseCartRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/newbot.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseBot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseBot.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseConstVariables.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseConstVariables.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminKyb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminKyb.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminMsg.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/admin/AdminMsg.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserKyb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserKyb.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserMsg.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserMsg.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/BotUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/BotUser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/LessonRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/LessonRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/LessonVideoRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/LessonVideoRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/service/DynamicBotService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/OnlineCourseBot.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/OnlineCourseBot.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/OnlineCourseConstVariables.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/OnlineCourseConstVariables.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/admin/AdminFunction.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/admin/AdminFunction.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/admin/AdminKyb.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/admin/AdminKyb.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/admin/AdminMsg.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/admin/AdminMsg.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserFunction.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserFunction.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserKyb.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserKyb.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser$BotUserBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser$BotUserBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserMsg.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserMsg.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser$BotUserBuilder.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/repository/LessonRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/repository/LessonRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/repository/LessonVideoRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/repository/LessonVideoRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService$BotInstance.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/service/DynamicBotService.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,77 +40,49 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="MavenImportPreferences">
-    <option name="generalSettings">
-      <MavenGeneralSettings>
-        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
-      </MavenGeneralSettings>
-    </option>
-  </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 4
+  &quot;associatedIndex&quot;: 3
 }</component>
-  <component name="ProjectId" id="2v3p9LInWFxggFxtIiir6gZIstS" />
+  <component name="ProjectId" id="2vfXoD9MkpHy44zdBVzSM2BZ7cm" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.Main.executor": "Run",
-    "Maven.newbot [clean,package].executor": "Run",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.NewbotApplication.executor": "Run",
-    "extract.method.default.visibility": "private",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Farobiy students/Desktop/zafar projectsa/add git for put to server/sdaDFSADFSAD",
+    "last_opened_file_path": "C:/Users/Farobiy students/Desktop/zafar projectsa/git uchun/botmaker",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
     "vue.rearranger.settings.migration": "true"
-  },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "postgresql"
-    ]
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="CreateClassDialog.RecentsKey">
-      <recent name="org.example.newbot.repository" />
-      <recent name="org.example.newbot.dto" />
-      <recent name="org.example.newbot.bot.roleadmin" />
-    </key>
-    <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="org.example.newbot.bot" />
-      <recent name="org.example.newbot.repository" />
-      <recent name="org.example.newbot.model" />
-    </key>
-  </component>
-  <component name="RunAnythingCache">
-    <option name="myCommands">
-      <command value="mvn clean package" />
-    </option>
-  </component>
   <component name="RunManager">
-    <configuration name="NewbotApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <configuration name="NewbotApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="newbot" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="org.example.newbot.NewbotApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.example.newbot.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Spring Boot.NewbotApplication" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -134,39 +95,13 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="8c8ccb28-d810-4f4f-95e5-059e5dfc90ca" name="Changes" comment="" />
-      <created>1743383461421</created>
+      <changelist id="5d080122-9d66-4016-870a-f9f832d1de58" name="Changes" comment="" />
+      <created>1744537274307</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1743383461421</updated>
-      <workItem from="1743383462325" duration="3015000" />
-      <workItem from="1743426553187" duration="3480000" />
-      <workItem from="1743430935573" duration="6926000" />
-      <workItem from="1743441852980" duration="15866000" />
-      <workItem from="1743459429395" duration="19106000" />
-      <workItem from="1743516112858" duration="30452000" />
-      <workItem from="1743562867660" duration="8608000" />
-      <workItem from="1743606467448" duration="7316000" />
-      <workItem from="1743614921307" duration="4129000" />
-      <workItem from="1743637646018" duration="2917000" />
-      <workItem from="1743649465092" duration="17253000" />
-      <workItem from="1743668260934" duration="13458000" />
-      <workItem from="1743736975307" duration="12034000" />
-      <workItem from="1743757608287" duration="16342000" />
-      <workItem from="1743824127199" duration="33132000" />
-      <workItem from="1743914395479" duration="26474000" />
-      <workItem from="1743996201248" duration="34772000" />
-      <workItem from="1744167607513" duration="37433000" />
-      <workItem from="1744253790934" duration="350000" />
-      <workItem from="1744355052180" duration="12287000" />
-      <workItem from="1744433754032" duration="14759000" />
-      <workItem from="1744449783525" duration="3103000" />
-      <workItem from="1744456225754" duration="196000" />
-      <workItem from="1744468776511" duration="1384000" />
-      <workItem from="1744525480652" duration="2058000" />
-      <workItem from="1744527831697" duration="4758000" />
-      <workItem from="1744532699550" duration="2348000" />
-      <workItem from="1744535188787" duration="1369000" />
+      <updated>1744537274307</updated>
+      <workItem from="1744537275440" duration="6000" />
+      <workItem from="1744537293621" duration="2085000" />
     </task>
     <servers />
   </component>
