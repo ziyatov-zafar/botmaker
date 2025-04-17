@@ -5,24 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5d080122-9d66-4016-870a-f9f832d1de58" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/online_course_entities/CourseCart.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/CourseCartRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/newbot.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseBot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/OnlineCourseBot.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/bot/online_course_bot/user/UserFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/OnlineCourseBot.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/OnlineCourseBot.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserFunction.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserFunction.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserMsg.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/bot/online_course_bot/user/UserMsg.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser$BotUserBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/newbot/model/BotUser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/online_course_entities/CourseCart.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/model/online_course_entities/CourseCart.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/CourseCartRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/newbot/repository/CourseCartRepository.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,22 +33,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.NewbotApplication.executor": "Run",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Farobiy students/Desktop/zafar projectsa/git uchun/botmaker",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.NewbotApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Farobiy students/Desktop/zafar projectsa/git uchun/botmaker&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="NewbotApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="newbot" />
@@ -101,11 +86,23 @@
       <option name="presentableId" value="Default" />
       <updated>1744537274307</updated>
       <workItem from="1744537275440" duration="6000" />
-      <workItem from="1744537293621" duration="2085000" />
+      <workItem from="1744537293621" duration="3047000" />
+      <workItem from="1744601415320" duration="10204000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

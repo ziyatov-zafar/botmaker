@@ -14,7 +14,7 @@ public class CourseCart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String status;//open//
+    private String status;//open//draft//finish
     private Long courseId;
     private Long userId;
     private String courseName;
